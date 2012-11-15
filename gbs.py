@@ -13,61 +13,39 @@ def import_raw_loci(filename):
     return np.genfromtxt(filename, dtype=str, delimiter='\t')
 
 
-
-
-#################
-#import the data
-data = np.genfromtxt('hmp_play.txt', dtype=str, delimiter='\t')
-
-#######
-
-# filter
-
-
-# SORTING
-
 def sort_loci(data):
-    '''Strips the column headers as well as the first column from the input array'''
+    '''Strips the column headers as well as the first column from the input array and sorts the loci and individuals according to highest abundance of bases'''
     indivID = data[0, 1:]
     locus = data[1:, 0]
-    strip_header = sp.delete(data, 0, 0) # strips the header row
-    strip_loci_row = sp.delete(strip_header, 0, 1)
-    data_not_N = data != 'N'
+    data_strip_header = sp.delete(data, 0, 0)
+    data_strip_loci_row = sp.delete(data_strip_header, 0, 1)
+    data_not_N = data_strip_loci_row != 'N'
     row_sums = -1*(np.sum(data_not_N, axis=1))
     col_sums = -1*(np.sum(data_not_N, axis=0))
     row_order = row_sums.argsort()
     col_order = col_sums.argsort()
-    indivID_sorted = indivID[col_order] # gives an error (only in the function):
-    # index 162 out of bounds
+    indivID_sorted = indivID[col_order]
     locus_sorted = locus[row_order]
-    data_sorted = data[row_order][:, col_order]
+    data_sorted = data_strip_loci_row[row_order][:, col_order]
     return data_sorted
 
-data = sort_loci(data)
+# split values in the alleles column (and probably handle that in sort_loci()
 
-#put the first row and first column in their own arrays and remove them from
-#the main array
-indivID = data[0, 1:]
-locus = data[1:, 0]
-data = sp.delete(data, 0, 0) # strips the header row
-data = sp.delete(data, 0, 1) # strips the 1st column
+for allele in alleles:
+    first = allele[0]
+    second = allele[2]
+    first_allele.append(first)
+    second_allele.append(second)
 
-#get the row and column sums
-data_not_N = data != 'N'
-row_sums = -1*(np.sum(data_not_N, axis=1))
-Mean_number_inds_per_SNP=-1*(np.mean(row_sums))
-# ord_row_sums = np.sort(row_sums) # M: I think it isn't needed... maybe for plotting?
-col_sums = -1*(np.sum(data_not_N, axis=0))
-Mean_number_SNPs_per_ind = -1*(np.mean(col_sums))
+data = np.insert(data, 0, first_allele, axis = 1)
+data = np.insert(data, 1, second_allele, axis = 1)
+data = sp.delete(data, 2, 1)
 
-# get the rank orders for both rows and columns
-row_order = row_sums.argsort()#need highest to lowest
-col_order = col_sums.argsort()#need highest to lowest
+#######
 
-# sort it all
-indivID_sorted = indivID[col_order]
-locus_sorted = locus[row_order]
-data_sorted = data[row_order][:, col_order]
+
+
+
 
 ########################################################################
 # PLOTTING
@@ -117,3 +95,9 @@ plot_data = np.array(plot_data, dtype=int)
 #          plot_data.append(index)
 #
 #print plot_data
+
+if __name__ == "main":
+
+    raw_data = import_raw_loci('hmp_play.txt')
+
+    data = sort_loci(raw_data)
