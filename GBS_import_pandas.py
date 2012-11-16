@@ -41,18 +41,37 @@ row_set=np.array(df['TP2':'TP5'])
 
 hmp = pd.read_table('hmp_play.txt', index_col = 0, header = 0)
 hmc = pd.read_table('hmc_play', index_col = 0, header = 0)
+#######
+
+first_allele = []
+second_allele = []
+for allele in hmp.ix[:, 'alleles']:
+    first_allele.append(allele.split('/')[0])
+    second_allele.append(allele.split('/')[1])
+
+hmp = hmp.ix[:, 'FLFL04':'WWA30']
+hmp.insert(0, 'allele_1', first_allele)
+hmp.insert(1, 'allele_2', second_allele)
+
+#######
+
+
+
+
+for i in range(2,53):
+    for val in hmp.ix[:, i]:
+        not_N = hmp.values != 'N'
+        print not_N[i]
+
+
+
+
+not_N = df.values != 'N'
 
 # indexing with:
 hmp.index # gives a list of row_id's
 
 
 
-hmp[0:10] # for rows
-hmp['alleles']
-# or
-hmp.FLF04 # gives the contents of the flf04 locus with the row_id's
-
-for row in hmp:
-    print row # prints the headers (??)
 
 
