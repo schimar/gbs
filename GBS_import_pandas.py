@@ -24,7 +24,7 @@ output_file.close()
 #You can see a particular column by indexing its name:
 #print df.p8
 #print""
-#You can see rows by indexing the range. Note that need to use numpy to view the array. Just the index works but it does not show under a print statement.
+#You can see rows by indexing the range. Note that you need to use numpy to view the array. Just the index works but it does not show under a print statement.
 #print "Four rows of DataFrame:", df['TP2':'TP5']
 row_set=np.array(df['TP2':'TP5'])
 #print""
@@ -55,23 +55,90 @@ hmp.insert(1, 'allele_2', second_allele)
 
 #######
 
+!head -n 10 hmc_play
 
-
-
+### hmp ###
 for i in range(2,53):
     for val in hmp.ix[:, i]:
-        not_N = hmp.values != 'N'
-        print not_N[i]
+        if val == 'N':
+            continue
+        if val != 'N':
+            print val
+
+
+not_N = hmp.values != 'N'
+print not_N[i]
 
 
 
 
 not_N = df.values != 'N'
 
-# indexing with:
-hmp.index # gives a list of row_id's
+
+for val in hmp.ix[:, 10]:
+    if val == 'N':
+        print 'juhu'   # how to jump to the next value in the list? or do nothing??
+        continue
+    if val != 'N':
+        print val
+
+
+for name in hmp.columns:
+    print name
+
+### hmc ###
+
+### ----->>>> first column is probably shifted (??)
+
+for val in hmc.ix[:, 1]:
+    print val.split('|')
+
+###################### test w/ single columns
+a = hmc.ix[:,1].copy()
+b = hmp.ix[:,3].copy()[:30]
+
+single = []
+for base in b:
+    counts = (val.split('|') for val in a)
+    for j, [count_1, count_2] in enumerate(counts):
+        if base == 'N':
+            value = 'N'  # or write 'N' to the new df (hmp)!!
+        if base != 'N':
+            if int(count_1) < 4: # drop the base in new df
+                value = 'N'
+            if int(count_2) < 4:
+                value = 'N'
+            if int(count_1) >= 4: # write the according base into the new df
+                value = base
+            if int(count_2) >= 4:
+                value = base
+    single.append(value)
+
+# --->>> fix the logic:
+#                       if value gets to be N when count_1 is below 0, then it is being overwritten with the secong allele...
+
+
+# --->>> if both count_1 and count_2 are >= 4    (!!!)
+# ambiguity codes
+
+# unused columns have to be cut out in order to just process the real stuff
+# probably append again after this is finished (??)
 
 
 
+##############################################
+## def my_awesome_gbs_function(hmp., hmc, threshold = 4): # threshold 4 per default
 
+# 1) read in both input files (hmc and hmp)
+
+# 2) a dataFrame similar to hmp (input !!!)
+df = pd.DataFrame({}, index = hmp.index[:30], columns=hmp.columns, dtype = np.str)
+
+# 3) probably extract columns allele_1 and allele_2 into seperate list/series ?
+
+# 4) ...the loop...
+
+# 5) insert N's and bases into new df (in the loop or outside?
+
+## --->> probably at the start, specify the potential
 
