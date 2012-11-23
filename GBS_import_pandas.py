@@ -41,7 +41,7 @@ import scipy as sp
 # hmc = pd.read_csv("hmc_play", index_col = 0, header = 1)
 
 hmp = pd.read_table('hmp_play.txt', index_col = 0, header = 0)
-hmc = pd.read_table('hmc_play', index_col = 0, header = 0)
+hmc = pd.read_table('hmc_play02.txt', index_col = 0, header = 0)
 #######
 
 first_allele = []
@@ -57,43 +57,14 @@ hmp.insert(1, 'allele_2', second_allele)
 #######
 
 #!head -n 10 hmc_play
-
-### hmp ###
-for i in range(2,53):
-    for val in hmp.ix[:, i]:
-        if val == 'N':
-            continue
-        if val != 'N':
-            print val
-
-
-not_N = hmp.values != 'N'
-print not_N[i]
-
-
+#######
+# not_N = hmp.values != 'N'
+# print not_N[i]
 
 
 #not_N = df.values != 'N'
 
-
-for val in hmp.ix[:, 10]:
-    if val == 'N':
-        print 'juhu'   # how to jump to the next value in the list? or do nothing??
-        continue
-    if val != 'N':
-        print val
-
-
-for name in hmp.columns:
-    print name
-
-### hmc ###
-
-### ----->>>> first column is probably shifted (??)
-
-for val in hmc.ix[:, 1]:
-    print val.split('|')
-
+#####################################################
 ###################### test w/ single columns
 a = hmc.ix[:,1].copy()
 b = hmp.ix[:,3].copy()[:30]
@@ -103,6 +74,7 @@ b[0] = 'T'
 b[1] = 'C'
 
 ############# simplified version (w/ just one series/list) working, now extend the whole thing to the whole pie
+
 single = []
 for i, base in enumerate(b):
     count_1, count_2 = a[i].split('|')
@@ -119,8 +91,55 @@ for i, base in enumerate(b):
             value = base # maybe here: check for ambiguity and potential alleles
     single.append(value)
 ######################
+######################
+def filter_single_row(base_list, count_list, threshold = 4):
+    '''Returns a list of nucleotides filtered (threshold, default = 4) by number of occurence of a sequencing run at specific loci in a list of bases'''
+    output = []
+    for i, base in enumerate(base_list):
+        count_1, count_2 = count_list[i].split('|')
+        if base == 'N':
+            value = 'N'
+        else:
+            if int(count_1) < threshold and int(count_2) < threshold:
+                value = 'N'
+            elif int(count_1) < threshold and int(count_2) >= threshold:
+                value = base # note: check allele_1 and allele_2 and ambiguity codes!
+            elif int(count_1) >= threshold and int(count_2) < threshold:
+                value = base
+            else:
+                value = base # maybe here: check for ambiguity and potential alleles
+        output.append(value)
+    return output
+#######
 
+hmc.columns[:152] # all the meaningful columns
 
+def get_count_values(count_input):
+    '''Returns a list of values from a pandas.DataFrame with the respective number of occurences of a sequencing run at specific loci'''
+    count_col_list = []
+    for count_col in count_input[count_input.columns[:152]]:
+        for count in count_input[count_col]:
+            count_col_list.append(count)
+    return count_col_list
+#######
+
+def get_base_values(base_input):
+    '''Returns a list of values from the pandas.DataFrame consisting of nucleotide positions at specific loci'''
+    base_col_list = []
+    for base_col in base_input[base_input.columns[2:]]:
+        for base in base_input[base_col]:
+            base_col_list.append(base)
+    return base_col_list
+#######
+
+base_values = get_base_values(hmp.ix[:30,:])
+count_values = get_count_values(hmc)
+
+base_filter = filter_single_row(base_values, count_values)
+
+###
+
+for col in base_filter:
 
 
 
@@ -128,6 +147,7 @@ for i, base in enumerate(b):
 
 # unused columns have to be cut out in order to just process the real stuff
 # probably append again after this is finished (??)
+# ----> maybe use df.filter to restrict to columns based on a certain (regex ??) pattern
 
 
 
