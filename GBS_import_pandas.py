@@ -92,7 +92,7 @@ for i, base in enumerate(b):
     single.append(value)
 ######################
 ######################
-def filter_single_row(base_list, count_list, threshold = 4):
+def filter_single_col(base_list, count_list, threshold = 4):
     '''Returns a list of nucleotides filtered (threshold, default = 4) by number of occurence of a sequencing run at specific loci in a list of bases'''
     output = []
     for i, base in enumerate(base_list):
@@ -135,11 +135,11 @@ def get_base_values(base_input):
 base_values = get_base_values(hmp.ix[:30,:])
 count_values = get_count_values(hmc)
 
-base_filter = filter_single_row(base_values, count_values)
+base_filter = filter_single_col(base_values, count_values)
 
 ###
 
-for col in base_filter:
+
 
 
 
