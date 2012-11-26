@@ -102,49 +102,49 @@ def filter_single_col(base_list, count_list, threshold = 4):
         else:
             if int(count_1) < threshold and int(count_2) < threshold:
                 value = 'N'
-            elif int(count_1) < threshold and int(count_2) >= threshold:
-                value = base # note: check allele_1 and allele_2 and ambiguity codes!
-            elif int(count_1) >= threshold and int(count_2) < threshold:
-                value = base
             else:
-                value = base # maybe here: check for ambiguity and potential alleles
+                value = base
         output.append(value)
     return output
 #######
 
-hmc.columns[:152] # all the meaningful columns
+# hmc.columns[:152] # all the meaningful columns
 
-def get_count_values(count_input):
-    '''Returns a list of values from a pandas.DataFrame with the respective number of occurences of a sequencing run at specific loci'''
-    count_col_list = []
-    for count_col in count_input[count_input.columns[:152]]:
-        for count in count_input[count_col]:
-            count_col_list.append(count)
-    return count_col_list
+
 #######
 
-def get_base_values(base_input):
-    '''Returns a list of values from the pandas.DataFrame consisting of nucleotide positions at specific loci'''
-    base_col_list = []
-    for base_col in base_input[base_input.columns[2:]]:
-        for base in base_input[base_col]:
-            base_col_list.append(base)
-    return base_col_list
-#######
+# base_values = get_base_values(hmp.ix[:30,2:])
+# count_values = get_count_values(hmc)
 
-base_values = get_base_values(hmp.ix[:30,:])
-count_values = get_count_values(hmc)
-
-base_filter = filter_single_col(base_values, count_values)
+# base_filter = filter_single_col(base_values, count_values)
 
 ###
+hmp_trimmed = hmp.ix[:30,2:]
+results = []
+for i, col in enumerate(hmp_trimmed.columns):
+    base_values = hmp_trimmed[col]
+    count_values = hmc[hmc.columns[i]]
+    results.append(gbs.filter_single_col(base_values, count_values)) # gbs...
+
+df = pd.DataFrame({hmp.ix[:,:2],results}, index = hmp.index[:30], columns=hmp.columns, dtype = np.str)
 
 
-
-
-
+########################################################################
 # ambiguity codes
+# - if ambiguity code doesn't make sense, flag that position (how?)
+# - so compare allele_1 & allele_2 with actual value
+labels = ['PT1', 'PT2', 'PT3', 'PT4', 'PT5', 'PT6', 'PT7', 'PT8', 'PT9', 'PT10', 'PT11', 'PT12', 'PT13', 'PT14', 'PT15']
+c = pd.Series(['A', 'C', 'T', 'G', 'W', 'B', 'D', 'H', 'K', 'M', 'N', 'R', 'S', 'V', 'Y'], index = labels)
+d = a [:15]
+# e = hmp.ix[:15,:1] # note: that's the initial hmp....
 
+
+ambig = []
+for i, base in enumerate(c):
+    count_1, count_2 = d[i].split('|')
+#    allele_1, allele_2 = e[i].split('/')
+
+########################################################################
 # unused columns have to be cut out in order to just process the real stuff
 # probably append again after this is finished (??)
 # ----> maybe use df.filter to restrict to columns based on a certain (regex ??) pattern
