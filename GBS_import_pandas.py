@@ -91,21 +91,8 @@ for i, base in enumerate(b):
             value = base # maybe here: check for ambiguity and potential alleles
     single.append(value)
 ######################
-######################
-def filter_single_col(base_list, count_list, threshold = 4):
-    '''Returns a list of nucleotides filtered (threshold, default = 4) by number of occurence of a sequencing run at specific loci in a list of bases'''
-    output = []
-    for i, base in enumerate(base_list):
-        count_1, count_2 = count_list[i].split('|')
-        if base == 'N':
-            value = 'N'
-        else:
-            if int(count_1) < threshold and int(count_2) < threshold:
-                value = 'N'
-            else:
-                value = base
-        output.append(value)
-    return output
+
+
 #######
 
 # hmc.columns[:152] # all the meaningful columns
@@ -125,8 +112,14 @@ for i, col in enumerate(hmp_trimmed.columns):
     base_values = hmp_trimmed[col]
     count_values = hmc[hmc.columns[i]]
     results.append(gbs.filter_single_col(base_values, count_values)) # gbs...
+###
 
-df = pd.DataFrame({hmp.ix[:,:2],results}, index = hmp.index[:30], columns=hmp.columns, dtype = np.str)
+results.insert(0, list(hmp.allele_1))
+results.insert(1, list(hmp.allele_2))
+
+
+df = pd.DataFrame(zip(*results), index = hmp.index[:30], columns=hmp.columns, dtype = np.str)
+
 
 
 ########################################################################
@@ -157,7 +150,7 @@ for i, base in enumerate(c):
 # 1) read in both input files (hmc and hmp)
 
 # 2) a dataFrame similar to hmp (input !!!)
-df = pd.DataFrame({}, index = hmp.index[:30], columns=hmp.columns, dtype = np.str)
+df = pd.DataFrame([[0,1,'a'], [3,4,'b']], index = hmp.index[:30], columns=hmp.columns, dtype = np.str)
 
 # 3) probably extract columns allele_1 and allele_2 into seperate list/series ?
 

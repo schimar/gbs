@@ -7,6 +7,20 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 ###
+def filter_single_col(base_list, count_list, threshold = 4):
+    '''Returns a list of nucleotides filtered (threshold, default = 4) by number of occurence of a sequencing run at specific loci in a list of bases'''
+    output = []
+    for i, base in enumerate(base_list):
+        count_1, count_2 = count_list[i].split('|')
+        if base == 'N':
+            value = 'N'
+        else:
+            if int(count_1) < threshold and int(count_2) < threshold:
+                value = 'N'
+            else:
+                value = base
+        output.append(value)
+    return output
 
 def import_raw_loci(filename):
     '''Retrieve sequencing data from the text file and store it in a numpy array'''
@@ -29,75 +43,48 @@ def sort_loci(data):
     data_sorted = data_strip_loci_row[row_order][:, col_order]
     return data_sorted
 
-# split values in the alleles column (and probably handle that in sort_loci()
 
-for allele in alleles:
-    first = allele[0]
-    second = allele[2]
-    first_allele.append(first)
-    second_allele.append(second)
 
-data = np.insert(data, 0, first_allele, axis = 1)
-data = np.insert(data, 1, second_allele, axis = 1)
-data = sp.delete(data, 2, 1)
-
-#######
+# you may have to mirror those changes in the 'order' files, too
+# or: maybe return those (row_id and col_header) as well ?
+# pdata = import_raw_loci('hmp_play.txt')
+# pdata = sp.delete(pdata, [2,3,4,5,6,7,8,9,10],1)
 
 
 
-
-
-########################################################################
-# PLOTTING
-
-# Now plot Locus distributions:
-loci_per_ind = -1*(col_sums)
-plt.hist(loci_per_ind, 60)
-plt.xlabel('Number of loci Represented', fontsize=20)
-plt.ylabel('Number of Individuals', fontsize= 20)
-plt.savefig(pp, format='pdf')
-#plt.show()#This will need to change to plt.figure for multiple graphs
-# Go to http://matplotlib.org/gallery.html - try heat map. Also explore saving figures
-#
-
-# Next part works nicely on its own (when above plot removed) but fails when both together
-# Also ask Ethan about savefile
-# Now plot Individual distributions:
-inds_per_locus = -1*(row_sums)
-plt.hist(inds_per_locus, 140)# you can simply measure the length ofindivID or max of
-# Inds_per_locus to make an appropriate number of bins!
-plt.xlabel('Number of loci Represented', fontsize=20)
-plt.ylabel('Number of Inds', fontsize= 20)
-plt.savefig(pp, format='pdf')
-#plt.show()
-
-pp.close()
-plot_data = data_sorted.copy()
-#plot data is the sorted array(descening) converted to binary for plotting
-
-for (x,y), value in np.ndenumerate(plot_data):
-     if value == "N":
-          plot_data[x,y] = 0
-     else:
-          plot_data[x,y] = 1
-plot_data = np.array(plot_data, dtype=int)
-
-# plot_data is now a simple binary array. But it seems hard to plot. Here is an alternative:
-# Redo the above loop over plot data.sorted. ndenumerate returns the x,y coordinates (above
-# I used it to loop through the array). But you could use it to create plot_data as
-# x,y coordinates that can then feed into a scatter plot: see some great ideas at:
-# www.prettygraph.com/blog/how-to-plot-a-scatter-plot-using-matplotlib/
-
-# attempt at a start
-#plot_data = np.array()
-#for (x,y), value in np.ndenumerate(data_sorted):
-#     if value == "N":
-#          plot_data.append(index)
-#
-#print plot_data
 
 if __name__ == "main":
 
+    # filter
+
+    hmp = pd.read_table('hmp_play.txt', index_col = 0, header = 0)
+    hmc = pd.read_table('hmc_play02.txt', index_col = 0, header = 0)
+    #######
+
+    first_allele = []
+    second_allele = []
+    for allele in hmp.ix[:, 'alleles']:
+        first_allele.append(allele.split('/')[0])
+        second_allele.append(allele.split('/')[1])
+
+    hmp = hmp.ix[:, 'FLFL04':'WWA30']
+    hmp.insert(0, 'allele_1', first_allele)
+    hmp.insert(1, 'allele_2', second_allele)
+    ###
+    hmp_trimmed = hmp.ix[:30,2:]
+    results = []
+    for i, col in enumerate(hmp_trimmed.columns):
+        base_values = hmp_trimmed[col]
+        count_values = hmc[hmc.columns[i]]
+        results.append(gbs.filter_single_col(base_values, count_values))
+
+    results.insert(0, list(hmp.allele_1))
+    results.insert(1, list(hmp.allele_2))
+
+    df = pd.DataFrame(zip(*results), index = hmp.index[:30], columns=hmp.columns, dtype = np.str)
+
+
+    # sort loci
     raw_data = import_raw_loci('hmp_play.txt')
 
     data = sort_loci(raw_data)
