@@ -3,6 +3,10 @@ import scipy as sp
 import matplotlib.pyplot as plt
 from matplotlib import pylab as plb
 from matplotlib.backends.backend_pdf import PdfPages
+######
+
+
+
 pp = PdfPages('multipage.pdf')
 
 #import the data
@@ -32,6 +36,9 @@ indivID_sorted = indivID[col_order]
 locus_sorted = locus[row_order]
 data_sorted = data[row_order][:, col_order]
 #
+
+####################################
+## PLOTTING
 # Now plot Locus distributions:
 loci_per_ind = -1*(col_sums)
 plt.hist(loci_per_ind, 60)
@@ -66,7 +73,7 @@ plot_data = np.array(plot_data, dtype=int)
 
 # plot_data is now a simple binary array. But it seems hard to plot. Here is an alternative:
 # Redo the above loop over plot data.sorted. ndenumerate returns the x,y coordinates (above
-# I used it to loop through the array). But you could use it to create plot_data as 
+# I used it to loop through the array). But you could use it to create plot_data as
 # x,y coordinates that can then feed into a scatter plot: see some great ideas at:
 # www.prettygraph.com/blog/how-to-plot-a-scatter-plot-using-matplotlib/
 
