@@ -28,7 +28,7 @@ def import_raw_loci(filename):
 
 
 def sort_loci(data):
-    '''Strips the column headers as well as the first column from the input array and sorts the loci and individuals according to highest abundance of bases'''
+    '''Strips the column headers as well as the first column from the input np.array and sorts the loci and individuals according to highest abundance of bases'''
     indivID = data[0, 1:]
     locus = data[1:, 0]
     data_strip_header = sp.delete(data, 0, 0)
@@ -38,12 +38,25 @@ def sort_loci(data):
     col_sums = -1*(np.sum(data_not_N, axis=0))
     row_order = row_sums.argsort()
     col_order = col_sums.argsort()
-    indivID_sorted = indivID[col_order]
-    locus_sorted = locus[row_order]
+    indivID_sorted = indivID[row_order] # was changed (i.e. indivID[col_order])
+    locus_sorted = locus[col_order]
     data_sorted = data_strip_loci_row[row_order][:, col_order]
     return data_sorted
 
 
+def sort_loci_pdDF(data):
+    '''Strips the column headers as well as the first column from the input pd.DataFrame and sorts the loci and individuals according to highest abundance of bases'''
+    data_strip_loci = data.ix[:, 'FLFL04': 'WWA30']
+    data_not_N = data_strip_loci != 'N'
+    row_sums = -1*(np.sum(data_not_N, axis=1))
+    col_sums = -1*(np.sum(data_not_N, axis=0))
+    row_order = row_sums.argsort()
+    col_order = col_sums.argsort()
+    indivID_sorted = data.index[row_order]
+    locus_sorted = data.columns[col_order]
+    data_sorted = np.array(data_strip_loci)[row_order][:, col_order]
+    data_sorted = pd.DataFrame(data_sorted, index = indivID_sorted, columns= locus_sorted, dtype = np.str)
+    return data_sorted
 
 # you may have to mirror those changes in the 'order' files, too
 # or: maybe return those (row_id and col_header) as well ?
@@ -60,31 +73,23 @@ if __name__ == "main":
     hmp = pd.read_table('hmp_play.txt', index_col = 0, header = 0)
     hmc = pd.read_table('hmc_play02.txt', index_col = 0, header = 0)
     #######
+    hmp_trimmed = hmp.ix[:30, 'FLFL04':'WWA30'] # later, change the '30'
 
-    first_allele = []
-    second_allele = []
-    for allele in hmp.ix[:, 'alleles']:
-        first_allele.append(allele.split('/')[0])
-        second_allele.append(allele.split('/')[1])
-
-    hmp = hmp.ix[:, 'FLFL04':'WWA30']
-    hmp.insert(0, 'allele_1', first_allele)
-    hmp.insert(1, 'allele_2', second_allele)
-    ###
-    hmp_trimmed = hmp.ix[:30,2:]
     results = []
     for i, col in enumerate(hmp_trimmed.columns):
         base_values = hmp_trimmed[col]
         count_values = hmc[hmc.columns[i]]
-        results.append(gbs.filter_single_col(base_values, count_values))
+        results.append(filter_single_col(base_values, count_values))
 
-    results.insert(0, list(hmp.allele_1))
-    results.insert(1, list(hmp.allele_2))
+    df = pd.DataFrame(zip(*results), index = hmp_trimmed.index[:30], columns=hmp_trimmed.columns, dtype = np.str)
 
-    df = pd.DataFrame(zip(*results), index = hmp.index[:30], columns=hmp.columns, dtype = np.str)
-
+    ### this one probably later or before and check for correct sorting !!
+    df.insert(0, 'alleles', hmp.ix[:, 'alleles'])
+    df2 = hmp.ix[:, 'chrom': 'QCcode']
+    df = df.join(df2)
 
     # sort loci
-    raw_data = import_raw_loci('hmp_play.txt')
+    # raw_data = import_raw_loci('hmp_play.txt')
 
-    data = sort_loci(raw_data)
+    data = sort_loci_pdDF(df)
+
