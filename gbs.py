@@ -1,5 +1,6 @@
 
 from __future__ import division
+import csv
 
 import numpy as np
 import scipy as sp
@@ -11,23 +12,43 @@ def filter_single_col(base_list, count_list, threshold = 4):
     '''Returns a list of nucleotides filtered (threshold, default = 4) by number of occurence of a sequencing run at specific loci in a list of bases'''
     output = []
     for i, base in enumerate(base_list):
-        count_1, count_2 = count_list[i].split('|')
+        count_1, count_2 = map(int, count_list[i].split('|'))
         if base == 'N':
             value = 'N'
         else:
-            if int(count_1) < threshold and int(count_2) < threshold:
+            if count_1 < threshold and count_2 < threshold:
                 value = 'N'
             else:
                 value = base
         output.append(value)
     return output
 
+def get_loci_from_iupac_codes(base_list, count_list, allele_list, threshold = 4):
+    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels'''
+    ambig = []
+    value = ''
+    for i, base in enumerate(base_list):
+        count_1, count_2 = map(int, count_list[i].split('|'))
+        allele_1, allele_2 = allele_list[i].split('/')
+        if base == 'N':
+            value = 'N'
+        else:
+            if count_1 >= threshold and count_2 < threshold:
+                value =  str(allele_1 + '/' + allele_1)
+            elif count_1 < threshold and count_2 >= threshold:
+                value = str(allele_2 + '/' + allele_2)
+            elif count_1 >= threshold and count_2 >= threshold:
+                value = str(allele_1 + '/' + allele_2)
+        ambig.append(value)
+    return ambig
+
+
 def import_raw_loci(filename):
     '''Retrieve sequencing data from the text file and store it in a numpy array'''
     return np.genfromtxt(filename, dtype=str, delimiter='\t')
 
 
-def sort_loci(data):
+def sort_loci_def(data, column_headers, row_headers):
     '''Strips the column headers as well as the first column from the input np.array and sorts the loci and individuals according to highest abundance of bases'''
     indivID = data[0, 1:]
     locus = data[1:, 0]
@@ -43,6 +64,17 @@ def sort_loci(data):
     data_sorted = data_strip_loci_row[row_order][:, col_order]
     return data_sorted
 
+def sort_loci_np(data, column_headers, row_headers):
+    '''Strips the column headers as well as the first column from the input np.array and sorts the loci and individuals according to highest abundance of bases'''
+    data_not_N = data != 'N'
+    row_sums = -1*(np.sum(data_not_N, axis=1))
+    col_sums = -1*(np.sum(data_not_N, axis=0))
+    row_order = row_sums.argsort()
+    col_order = col_sums.argsort()
+    indivID_sorted = column_headers[col_order] # was changed (i.e. indivID[col_order])
+    locus_sorted = row_headers[row_order]
+    data_sorted = data[row_order][:, col_order]
+    return data_sorted
 
 def sort_loci_pdDF(data):
     '''Strips the column headers as well as the first column from the input pd.DataFrame and sorts the loci and individuals according to highest abundance of bases'''
@@ -58,12 +90,6 @@ def sort_loci_pdDF(data):
     data_sorted = pd.DataFrame(data_sorted, index = indivID_sorted, columns= locus_sorted, dtype = np.str)
     return data_sorted
 
-# you may have to mirror those changes in the 'order' files, too
-# or: maybe return those (row_id and col_header) as well ?
-# pdata = import_raw_loci('hmp_play.txt')
-# pdata = sp.delete(pdata, [2,3,4,5,6,7,8,9,10],1)
-
-
 
 
 if __name__ == "main":
@@ -73,23 +99,38 @@ if __name__ == "main":
     hmp = pd.read_table('hmp_play.txt', index_col = 0, header = 0)
     hmc = pd.read_table('hmc_play02.txt', index_col = 0, header = 0)
     #######
-    hmp_trimmed = hmp.ix[:30, 'FLFL04':'WWA30'] # later, change the '30'
+    hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
 
-    results = []
+    filter_results = []
     for i, col in enumerate(hmp_trimmed.columns):
         base_values = hmp_trimmed[col]
         count_values = hmc[hmc.columns[i]]
-        results.append(filter_single_col(base_values, count_values))
+        filter_results.append(filter_single_col(base_values, count_values))
 
-    df = pd.DataFrame(zip(*results), index = hmp_trimmed.index[:30], columns=hmp_trimmed.columns, dtype = np.str)
+    df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index[:30], columns=hmp_trimmed.columns, dtype = np.str)
 
-    ### this one probably later or before and check for correct sorting !!
-    df.insert(0, 'alleles', hmp.ix[:, 'alleles'])
+    unambiguous_results = []
+    for i, col in enumerate(hmp_trimmed.columns):
+        base_list = hmp_trimmed[col]
+        count_list = hmp_trimmed[hmc.columns[i]]
+        unambiguous_results.append(get_loci_from_iupac_codes(base_list, count_list, hmp.alleles))
+
+    df_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+
+
+    data_sorted4 = sort_loci_pdDF(df_unambiguous)
+
+    data_sorted4.insert(0, 'alleles', hmp.ix[:, 'alleles'])
+
     df2 = hmp.ix[:, 'chrom': 'QCcode']
-    df = df.join(df2)
+    df = data_sorted4.join(df2)
 
-    # sort loci
-    # raw_data = import_raw_loci('hmp_play.txt')
+    # and now the ambig_filter... better before the insert/join
 
-    data = sort_loci_pdDF(df)
+
+    # some plotting to see the distributions
+
+    df.to_csv("data_sorted4.csv")
+
+
 
