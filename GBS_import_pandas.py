@@ -46,25 +46,63 @@ hmc = pd.read_table('hmc_play02.txt', index_col = 0, header = 0)
 
 # clean:
 # load hmp and hmc, then:
+from gbs import *
 
-hmp_trimmed = hmp.ix[:30, 'FLFL04':'WWA30'] # later, change the '30'
+hmp = pd.read_table('HapMap.hmp.txt', index_col = 0, header = 0)
+hmc = pd.read_table('HapMap.hmc.txt', index_col = 0, header = 0)
 
-results = []
+
+hmp_trimmed = hmp.ix[:30, 'FLFL04':'WWA30']
+
+filter_results = []
 for i, col in enumerate(hmp_trimmed.columns):
     base_values = hmp_trimmed[col]
     count_values = hmc[hmc.columns[i]]
-    results.append(gbs.filter_single_col(base_values, count_values))
+    filter_results.append(filter_single_col(base_values, count_values))
 
-df = pd.DataFrame(zip(*results), index = hmp_trimmed.index[:30], columns=hmp_trimmed.columns, dtype = np.str)
+data_filtered = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
-#
-data = gbs.sort_loci_pdDF(df)
+####
+unambiguous_results = []
+for i, col in enumerate(data_filtered.columns):
+    base_list = data_filtered[col]
+    count_list = hmc[hmc.columns[i]]
+    unambiguous_results.append(get_loci_from_iupac_codes(base_list, count_list, hmp.alleles))
 
+data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+
+
+# alternatively:
+# data = np.array(zip(*results))
 
 #######
-df.insert(0, 'alleles', hmp.ix[:, 'alleles'])
+
+
+data_sorted0 = gbs.sort_loci_pdDF(hmp_trimmed)
+
+data_sorted2 = gbs.sort_loci_pdDF(data2)
+
+data_sorted4 = gbs.sort_loci_pdDF(data4)
+
+####
+
+
+
+
+
+np.insert(a, 1, np.array((1, 1)), 0)
+#######
+np.insert(0, 'alleles', hmp_trimmed.ix[:, 'alleles'])
 df2 = hmp.ix[:, 'chrom': 'QCcode'] # maybe do that after the ambig_func
 df = df.join(df2)
+
+
+export_to_csv(data0, "data0.csv")
+#######
+
+
+
+
 
 ################################# later...
 first_allele = []
@@ -201,4 +239,14 @@ df = pd.DataFrame([[0,1,'a'], [3,4,'b']], index = hmp.index[:30], columns=hmp.co
 # 5) insert N's and bases into new df (in the loop or outside?
 
 ## --->> probably at the start, specify the potential bases allele_1 & allele_2
-
+def sort_loci(data, column_headers, row_headers):
+    '''Strips the column headers as well as the first column from the input np.array and sorts the loci and individuals according to highest abundance of bases'''
+    data_not_N = data != 'N'
+    row_sums = -1*(np.sum(data_not_N, axis=1))
+    col_sums = -1*(np.sum(data_not_N, axis=0))
+    row_order = row_sums.argsort()
+    col_order = col_sums.argsort()
+    indivID_sorted = column_headers[col_order] # was changed (i.e. indivID[col_order])
+    locus_sorted = row_headers[row_order]
+    data_sorted = data_strip_loci_row[row_order][:, col_order]
+    return data_sorted
