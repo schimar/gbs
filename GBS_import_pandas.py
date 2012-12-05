@@ -2,43 +2,9 @@
 import numpy as np
 import pandas as pd
 import scipy as sp
-#data = pandas.read_csv("play.csv",index_col=0)
-# file path if needed: /Users/paulwolf/Documents/Manuscripts_and_Projects/Aspen_GBS/UNEAK_8_Aug _12/aspen_hapmap/
-#output_file = open("locus_dist_plot", 'w')
-#df=pandas.DataFrame(data)
-#not_N = df.values != 'N'
-#col_sums = scipy.sum(not_N, axis=0)
-#row_sums = scipy.sum(not_N, axis=1)
 
-
-
-#for row in df.values:
-#    inds_per_locus = 0
-#    for ind in locus:
-#        if ind != 'N':
-#            inds_per_locus += 1
-#    new_row = str(row) + "\n"
-
- #   output_file.write(new_row)
-#output_file.close()
-
-#You can see a particular column by indexing its name:
-#print df.p8
-#print""
-#You can see rows by indexing the range. Note that you need to use numpy to view the array. Just the index works but it does not show under a print statement.
-#print "Four rows of DataFrame:", df['TP2':'TP5']
-#row_set=np.array(df['TP2':'TP5'])
-#print""
-#print "Now converted to np.array:"
-#print row_set
-#start=data[:6]
-#print start
-#df = DataFrame(data)
-#print data['TP2', 'TP3']
 ########################################################################
 
-# hmp = pd.read_csv("hmp_play.txt", index_col = 0, header = 1)
-# hmc = pd.read_csv("hmc_play", index_col = 0, header = 1)
 
 hmp = pd.read_table('hmp_play.txt', index_col = 0, header = 0)
 hmc = pd.read_table('hmc_play02.txt', index_col = 0, header = 0)
@@ -52,7 +18,7 @@ hmp = pd.read_table('HapMap.hmp.txt', index_col = 0, header = 0)
 hmc = pd.read_table('HapMap.hmc.txt', index_col = 0, header = 0)
 
 
-hmp_trimmed = hmp.ix[:30, 'FLFL04':'WWA30']
+hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
 
 filter_results = []
 for i, col in enumerate(hmp_trimmed.columns):
@@ -82,24 +48,16 @@ data_sorted0 = gbs.sort_loci_pdDF(hmp_trimmed)
 
 data_sorted2 = gbs.sort_loci_pdDF(data2)
 
-data_sorted4 = gbs.sort_loci_pdDF(data4)
+data_sorted4 = gbs.sort_loci_pdDF(data_unambiguous)
 
-####
+data_sorted4.insert(0, 'alleles', hmp.ix[:, 'alleles'])
 
-
-
-
-
-np.insert(a, 1, np.array((1, 1)), 0)
-#######
-np.insert(0, 'alleles', hmp_trimmed.ix[:, 'alleles'])
-df2 = hmp.ix[:, 'chrom': 'QCcode'] # maybe do that after the ambig_func
-df = df.join(df2)
+df2 = hmp.ix[:, 'chrom': 'QCcode']
+df = data_sorted4.join(df2)
 
 
-export_to_csv(data0, "data0.csv")
-#######
-
+df.to_csv("data_sorted4.csv")
+########################################################################
 
 
 
@@ -118,12 +76,7 @@ hmp.insert(1, 'allele_2', second_allele)
 #######
 
 #!head -n 10 hmc_play
-#######
-# not_N = hmp.values != 'N'
-# print not_N[i]
 
-
-#not_N = df.values != 'N'
 
 #####################################################
 ###################### test w/ single columns
@@ -232,21 +185,7 @@ for j, ambi in enumerate(iupac.ix[5:, 0]):
 # 2) a dataFrame similar to hmp (input !!!)
 df = pd.DataFrame([[0,1,'a'], [3,4,'b']], index = hmp.index[:30], columns=hmp.columns, dtype = np.str)
 
-# 3) probably extract columns allele_1 and allele_2 into seperate list/series ?
 
-# 4) ...the loop...
 
-# 5) insert N's and bases into new df (in the loop or outside?
 
-## --->> probably at the start, specify the potential bases allele_1 & allele_2
-def sort_loci(data, column_headers, row_headers):
-    '''Strips the column headers as well as the first column from the input np.array and sorts the loci and individuals according to highest abundance of bases'''
-    data_not_N = data != 'N'
-    row_sums = -1*(np.sum(data_not_N, axis=1))
-    col_sums = -1*(np.sum(data_not_N, axis=0))
-    row_order = row_sums.argsort()
-    col_order = col_sums.argsort()
-    indivID_sorted = column_headers[col_order] # was changed (i.e. indivID[col_order])
-    locus_sorted = row_headers[row_order]
-    data_sorted = data_strip_loci_row[row_order][:, col_order]
-    return data_sorted
+

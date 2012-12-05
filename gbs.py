@@ -96,8 +96,9 @@ if __name__ == "main":
 
     # filter
 
-    hmp = pd.read_table('hmp_play.txt', index_col = 0, header = 0)
-    hmc = pd.read_table('hmc_play02.txt', index_col = 0, header = 0)
+    hmp = pd.read_table('HapMap.hmp.txt', index_col = 0, header = 0)
+    hmc = pd.read_table('HapMap.hmc.txt', index_col = 0, header = 0)
+
     #######
     hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
 
@@ -107,7 +108,7 @@ if __name__ == "main":
         count_values = hmc[hmc.columns[i]]
         filter_results.append(filter_single_col(base_values, count_values))
 
-    df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index[:30], columns=hmp_trimmed.columns, dtype = np.str)
+    df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
     unambiguous_results = []
     for i, col in enumerate(hmp_trimmed.columns):
