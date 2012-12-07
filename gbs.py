@@ -105,16 +105,16 @@ def sort_loci_pdDF(data):
 
 if __name__ == "main":
     if sys.argv > 1:
-        hmp = sys.argv[1]
-        hmc = sys.argv[2]
+        hmp = pd.read_table(sys.argv[1], index_col = 0, header = 0)
+        hmc = pd.read_table(sys.argv[2], index_col = 0, header = 0)
     else:
         hmp = pd.read_table('HapMap.hmp.txt', index_col = 0, header = 0)
         hmc = pd.read_table('HapMap.hmc.txt', index_col = 0, header = 0)
 
     # only use the actual samples
     hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
-    # drop all the columns with more than 90 (default) per cent 'N's
-    hmp_trimmed = drop_N_columns(hmp_trimmed)
+    # drop all the columns with more than 90 (default) per cent 'N's (not yet needed)
+    # hmp_trimmed = drop_N_columns(hmp_trimmed)
 
     # filter according to read depth count in hmc (default threshold = 4)
     filter_results = []
@@ -129,7 +129,7 @@ if __name__ == "main":
     unambiguous_results = []
     for i, col in enumerate(hmp_trimmed.columns):
         base_list = hmp_trimmed[col]
-        count_list = hmp_trimmed[hmc.columns[i]]
+        count_list = hmc[hmc.columns[i]]
         unambiguous_results.append(get_loci_from_iupac_codes(base_list, count_list, hmp.alleles))
 
     data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
