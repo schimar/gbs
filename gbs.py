@@ -1,6 +1,8 @@
+'''Filter and sorting for GBS (Genotyping by Sequencing) HapMap files'''
 
 from __future__ import division
 import csv
+import sys
 
 import numpy as np
 import scipy as sp
@@ -8,6 +10,15 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 ###
+def drop_N_columns(data, drop_level = 0.9):
+    data_dropped = data.copy()
+    for i, col in enumerate(data_dropped.columns):
+        base_series = data_dropped[col]
+        N_to_length = np.sum(base_series == 'N')/len(base_series)
+        if N_to_length > drop_level:
+            data_dropped = data_dropped.drop(col, axis=1)
+    return data_dropped
+
 def filter_single_col(base_list, count_list, threshold = 4):
     '''Returns a list of nucleotides filtered (threshold, default = 4) by number of occurence of a sequencing run at specific loci in a list of bases'''
     output = []
@@ -87,21 +98,24 @@ def sort_loci_pdDF(data):
     indivID_sorted = data.index[row_order]
     locus_sorted = data.columns[col_order]
     data_sorted = np.array(data_strip_loci)[row_order][:, col_order]
-    data_sorted = pd.DataFrame(data_sorted, index = indivID_sorted, columns= locus_sorted, dtype = np.str)
+    data_sorted = pd.DataFrame(data_sorted, index = indivID_sorted, columns= locus_sorted)
     return data_sorted
 
 
-
 if __name__ == "main":
+    if sys.argv > 1:
+        hmp = sys.argv[1]
+        hmc = sys.argv[2]
+    else:
+        hmp = pd.read_table('HapMap.hmp.txt', index_col = 0, header = 0)
+        hmc = pd.read_table('HapMap.hmc.txt', index_col = 0, header = 0)
 
-    # filter
-
-    hmp = pd.read_table('HapMap.hmp.txt', index_col = 0, header = 0)
-    hmc = pd.read_table('HapMap.hmc.txt', index_col = 0, header = 0)
-
-    #######
+    # only use the actual samples
     hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
+    # drop all the columns with more than 90 (default) per cent 'N's
+    hmp_trimmed = drop_N_columns(hmp_trimmed)
 
+    # filter according to read depth count in hmc (default threshold = 4)
     filter_results = []
     for i, col in enumerate(hmp_trimmed.columns):
         base_values = hmp_trimmed[col]
@@ -110,28 +124,24 @@ if __name__ == "main":
 
     df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
+    # transform ambiguous iupac codes to unambiguous nucleotides
     unambiguous_results = []
     for i, col in enumerate(hmp_trimmed.columns):
         base_list = hmp_trimmed[col]
         count_list = hmp_trimmed[hmc.columns[i]]
         unambiguous_results.append(get_loci_from_iupac_codes(base_list, count_list, hmp.alleles))
 
-    df_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+    data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
+    # sort the data according to abundance of bases (as opposed to 'N's)
+    data_sorted4 = sort_loci_pdDF(data_unambiguous)
 
-    data_sorted4 = sort_loci_pdDF(df_unambiguous)
-
+    # the alleles column gets to be inserted
     data_sorted4.insert(0, 'alleles', hmp.ix[:, 'alleles'])
-
+    # and the additional information as well
     df2 = hmp.ix[:, 'chrom': 'QCcode']
     df = data_sorted4.join(df2)
-
-    # and now the ambig_filter... better before the insert/join
-
-
     # some plotting to see the distributions
-
+    # write the output to a csv file
     df.to_csv("data_sorted4.csv")
-
-
 
