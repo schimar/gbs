@@ -11,6 +11,7 @@ import pandas as pd
 
 ###
 def drop_N_columns(data, drop_level = 0.9):
+    '''Returns a pd.DataFrame, where all columns, which consist of more than 90 per cent (default) 'N's are being dropped'''
     data_dropped = data.copy()
     for i, col in enumerate(data_dropped.columns):
         base_series = data_dropped[col]
