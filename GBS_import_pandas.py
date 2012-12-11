@@ -5,63 +5,52 @@ import scipy as sp
 
 ########################################################################
 
-
-hmp = pd.read_table('hmp_play.txt', index_col = 0, header = 0)
-hmc = pd.read_table('hmc_play02.txt', index_col = 0, header = 0)
-#######
-
-# clean:
-# load hmp and hmc, then:
+########################################################################
+########################################################################
 from gbs import *
 
 hmp = pd.read_table('HapMap.hmp.txt', index_col = 0, header = 0)
 hmc = pd.read_table('HapMap.hmc.txt', index_col = 0, header = 0)
 
-
+# only use the actual samples
 hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
+# drop all the columns with more than 90 (default) per cent 'N's
+hmp_trimmed = drop_N_columns(hmp_trimmed)
 
+# filter according to read depth count in hmc (default threshold = 4)
 filter_results = []
 for i, col in enumerate(hmp_trimmed.columns):
     base_values = hmp_trimmed[col]
     count_values = hmc[hmc.columns[i]]
     filter_results.append(filter_single_col(base_values, count_values))
 
-data_filtered = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
-####
+# transform ambiguous iupac codes to unambiguous nucleotides
 unambiguous_results = []
-for i, col in enumerate(data_filtered.columns):
-    base_list = data_filtered[col]
+for i, col in enumerate(hmp_trimmed.columns):
+    base_list = hmp_trimmed[col]
     count_list = hmc[hmc.columns[i]]
     unambiguous_results.append(get_loci_from_iupac_codes(base_list, count_list, hmp.alleles))
 
 data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
-
 # alternatively:
 # data = np.array(zip(*results))
 
-#######
+# sort the data according to abundance of bases (as opposed to 'N's)
+data_sorted4 = sort_loci_pdDF(data_unambiguous)
 
-
-data_sorted0 = gbs.sort_loci_pdDF(hmp_trimmed)
-
-data_sorted2 = gbs.sort_loci_pdDF(data2)
-
-data_sorted4 = gbs.sort_loci_pdDF(data_unambiguous)
-
+# the alleles column gets to be inserted
 data_sorted4.insert(0, 'alleles', hmp.ix[:, 'alleles'])
-
+# and the additional information as well
 df2 = hmp.ix[:, 'chrom': 'QCcode']
 df = data_sorted4.join(df2)
-
-
+# some plotting to see the distributions
+# write the output to a csv file
 df.to_csv("data_sorted4.csv")
+
 ########################################################################
-
-
-
-
 ################################# later...
 first_allele = []
 second_allele = []
@@ -106,6 +95,34 @@ for i, base in enumerate(b):
     single.append(value)
 
 ########################################################################
+df = pd.DataFrame([['A', 'A', 'C', 'N'], ['N', 'T', 'T', 'N'], ['N', 'T', 'A', 'N'], ['N', 'G', 'T', 'N'], ['N', 'A', 'C', 'N'], ['N', 'A', 'T', 'N'], ['N', 'C', 'G', 'N']])
+
+
+def drop_N_columns(data, drop_level = 0.9):
+    data_dropped = data.copy()
+    for i, col in enumerate(data_dropped.columns):
+        base_series = data_dropped[col]
+        N_to_length = np.sum(base_series == 'N')/len(base_series)
+        if N_to_length > drop_level:
+            data_dropped = data_dropped.drop(col, axis=1)
+    return data_dropped
+
+
+
+def drop_N_columns(base_list, drop_level = 0.9):
+    for base in base_list:
+        sum_none = 0
+        if base == 'N':
+            sum_none += 1
+            if sum_none/len(base_list) < drop_level:
+                return True
+            else:
+                return False
+
+
+data_dropped = total_data2.drop(['open', 'close'], axis=1)
+
+
 ########################################################################
 # ambiguity codes
 # - if ambiguity code doesn't make sense, flag that position (how?)
@@ -148,42 +165,73 @@ d = pd.Series(    #            5                                 10
  '4|1', '0|5', '0|7', '0|9', '3|11', '1|4', '0|7', '1|4', '2|6', '7|0',
  '5|0', '0|8', '7|1', '0|4', '1|12', '0|1', '1|3', '10|2', '0|4', '1|3'], index = hmp.index[:30])
 #####################################################
-# old version, see debug_ambig.py
-ambig = []
-for i, base in enumerate(c):
-    count_1, count_2 = d[i].split('|')
-    allele_1, allele_2 = e[i].split('/')
-    for j, ambi in enumerate(iupac.ix[5:, 0]): # starting from the 5th row; we don't need 'N's and single nucleotides.
-        if base == 'N':
-            value = 'N'
-        else:
-            if base == ambi and count_1 >= 4 and count_2 < 4: # then check with the allele_1 & 2 and, if
-                value = allele_1
-            elif base == ambi and count_2 >= 4 and count_1 < 4:
-                value = allele_2
-            elif base == ambi and count_1 >= 4 and count_2 >= 4:
-                value = 'what now?'
-            else:
-                value = base
-    ambig.append(value)
 
-for j, ambi in enumerate(iupac.ix[5:, 0]):
-    print ambi
 
 ########################################################################
-# unused columns have to be cut out in order to just process the real stuff
-# probably append again after this is finished (??)
-# ----> maybe use df.filter to restrict to columns based on a certain (regex ??) pattern
+
+# hmc subset for plot
+
+def get_single_counts(count_list):
+    co_list = []
+    for count in count_list:
+        if count == '0|0':
+            continue
+        else:
+            count_1, count_2 = count.split('|')
+        co_list.append([count_1, count_2])
+    return co_list
+####
+
+co = hmc.ix[:,'FLFL04': 'WWA30']
+
+# loop over all the columns and get the values in one big list
+co_values = []
+for column in co.columns:
+    for value in co.ix[:, column]:
+        co_values.append(value)
+
+# now call the func with the formerly created list
+co_val = np.array(get_single_counts(co_values), dtype = np.int)
+####
+
+sub_val = co_val[:30].copy()
+sub_val[22] = [4,3]
+sub_val[23] = [3,4]
+sub_val[24] = [5,3]
+sub_val[0] = [3,6]
+sub_val[1] = [6,3]
+sub_val[2] = [3, 7]
+sub_val[4] = [7,3]
+sub_val[5] = [14, 22]
 
 
+type_list = []
+for(x,y) in co_val:
+    if x == 0 or y == 0:
+        value = 0
+    elif x >= 4 and y >= 4:
+        if x >= 14 or y >= 14:
+            value = 2
+        elif x < 14 or y < 14:
+            value = 1
+    elif x >= 4 and y < 4 or x < 4 and y >= 4:
+        if x - y == abs(1) or y - x == abs(1):
+            value = 3
+        elif x - y == abs(2) or y - x == abs(2):
+            value = 4
+        elif x - y == abs(3) or y - x == abs(3):
+            value = 5
+        elif x - y > abs(3) or y - x > abs(3):
+            value = 6
+    type_list.append(value)
+###
+plt.hist(type_list, bins = 7)
+plt.axis([0, 6, 0, 130000])
+plt.grid(b=None, which='major', axis='both')
 
-##############################################
-## def my_awesome_gbs_function(hmp., hmc, threshold = 4): # threshold 4 per default
+####
+plt.scatter(co_val[:,0], co_val[:,1])
 
-# 1) read in both input files (hmc and hmp)
-
-# 2) a dataFrame similar to hmp (input !!!)
-df = pd.DataFrame([[0,1,'a'], [3,4,'b']], index = hmp.index[:30], columns=hmp.columns, dtype = np.str)
 
 
 

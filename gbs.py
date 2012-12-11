@@ -102,14 +102,26 @@ def sort_loci_pdDF(data):
     data_sorted = pd.DataFrame(data_sorted, index = indivID_sorted, columns= locus_sorted)
     return data_sorted
 
+def get_single_counts(count_list):
+    '''Take a list or column (in pandas.DataFrame) of form 'no.|no.' and return the respective numbers in two seperate columns, appended in a list'''
+    co_list = []
+    for count in count_list:
+        if count == '0|0':
+            continue
+        else:
+            count_1, count_2 = count.split('|')
+        co_list.append([count_1, count_2])
+    return co_list
 
-if __name__ == "main":
-    if sys.argv > 1:
-        hmp = pd.read_table(sys.argv[1], index_col = 0, header = 0)
-        hmc = pd.read_table(sys.argv[2], index_col = 0, header = 0)
-    else:
-        hmp = pd.read_table('HapMap.hmp.txt', index_col = 0, header = 0)
-        hmc = pd.read_table('HapMap.hmc.txt', index_col = 0, header = 0)
+
+
+if __name__ == "__main__":
+#    if sys.argv > 1:
+#        hmp = pd.read_table(sys.argv[2], index_col = 0, header = 0)
+#        hmc = pd.read_table(sys.argv[3], index_col = 0, header = 0)
+#    else:
+    hmp = pd.read_table('HapMap.hmp.txt', index_col = 0, header = 0)
+    hmc = pd.read_table('HapMap.hmc.txt', index_col = 0, header = 0)
 
     # only use the actual samples
     hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
