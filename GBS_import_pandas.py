@@ -7,7 +7,7 @@ import scipy as sp
 
 ########################################################################
 ########################################################################
-from gbs import *
+from gbs_cli import *
 
 hmp = pd.read_table('HapMap.hmp.txt', index_col = 0, header = 0)
 hmc = pd.read_table('HapMap.hmc.txt', index_col = 0, header = 0)
@@ -203,27 +203,36 @@ sub_val[1] = [6,3]
 sub_val[2] = [3, 7]
 sub_val[4] = [7,3]
 sub_val[5] = [14, 22]
+####
 
 
-type_list = []
-for(x,y) in co_val:
-    if x == 0 or y == 0:
-        value = 0
-    elif x >= 4 and y >= 4:
-        if x >= 14 or y >= 14:
-            value = 2
-        elif x < 14 or y < 14:
-            value = 1
-    elif x >= 4 and y < 4 or x < 4 and y >= 4:
-        if x - y == abs(1) or y - x == abs(1):
-            value = 3
-        elif x - y == abs(2) or y - x == abs(2):
-            value = 4
-        elif x - y == abs(3) or y - x == abs(3):
-            value = 5
-        elif x - y > abs(3) or y - x > abs(3):
-            value = 6
-    type_list.append(value)
+def get_allele_types(data):
+    type_list = []
+    for(x,y) in data:
+        if x == 0 or y == 0:
+            value = 0
+        elif x >= 4 and y >= 4:
+            if x >= 14 or y >= 14:
+                value = 2
+            elif x < 14 or y < 14:
+                value = 1
+        elif x >= 4 and y < 4 or x < 4 and y >= 4:
+            if x - y == abs(1) or y - x == abs(1):
+                value = 3
+            elif x - y == abs(2) or y - x == abs(2):
+                value = 4
+            elif x - y == abs(3) or y - x == abs(3):
+                value = 5
+            elif x - y > abs(3) or y - x > abs(3):
+                value = 6
+        type_list.append(value)
+    return type_list
+####
+allele_types = get_allele_types(co_val), dtype = np.int
+co_val = pd.DataFrame(co_val)
+co_val.insert(2, 'allele_type', allele_types)
+
+
 ###
 plt.hist(type_list, bins = 7)
 plt.axis([0, 6, 0, 130000])
@@ -232,8 +241,36 @@ plt.grid(b=None, which='major', axis='both')
 ####
 plt.scatter(co_val[:,0], co_val[:,1])
 
+# subset with just the ones
+sub_co_val = co_val[co_val.allele_type > 3].copy()
+
+########################################################################
+########################################################################
+
+# convert pd.DataFrame to Genepop
+
+data = pd.read_csv('data_sorted4.csv', header=0, index_col=0)
+
+gbs = data.ix[:, 'MI17':'KFO4replicate']
+
+###
+
+# first loop over those and create the genotypes
+#  01:A 02:C 03:G 04:T    (as strings)
+
+###
+def filter_single_col(base_list, count_list, threshold = 4):
+    '''Returns a list of nucleotides filtered (threshold, default = 4) by number of occurence of a sequencing run at specific loci in a list of bases'''
+    output = []
+    for i, alleles in enumerate(base_list):
+        if alleles == 'N':
+            value = '0000'
+        else:
+            if alleles == 'A/A':
+                value = '0101'
+            elif:
 
 
-
-
-
+        output.append(value)
+    return output
+###
