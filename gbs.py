@@ -115,7 +115,28 @@ def get_single_counts(count_list):
 
 
 
-if __name__ == "__main__":
+def get_allele_types(data):
+    type_list = []
+    for(x,y) in data:
+        if x == 0 or y == 0:
+            value = 0
+        elif x >= 4 and y >= 4:
+            if x >= 14 or y >= 14:
+                value = 2
+            elif x < 14 or y < 14:
+                value = 1
+        elif x >= 4 and y < 4 or x < 4 and y >= 4:
+            if x - y == abs(1) or y - x == abs(1):
+                value = 3
+            elif x - y == abs(2) or y - x == abs(2):
+                value = 4
+            elif x - y == abs(3) or y - x == abs(3):
+                value = 5
+            elif x - y > abs(3) or y - x > abs(3):
+                value = 6
+        type_list.append(value)
+    return type_list
+
 #    if sys.argv > 1:
 #        hmp = pd.read_table(sys.argv[2], index_col = 0, header = 0)
 #        hmc = pd.read_table(sys.argv[3], index_col = 0, header = 0)
