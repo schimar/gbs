@@ -257,6 +257,9 @@ gbs = data.ix[:, 'MI17':'KFO4replicate']
 
 # first loop over those and create the genotypes
 #  01:A 02:C 03:G 04:T    (as strings)
+sub = hmp.ix[:20,10:]
+
+
 
 ###
 def filter_single_col(base_list, count_list, threshold = 4):
