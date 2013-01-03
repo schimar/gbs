@@ -5,7 +5,7 @@ gbs (Genotyping by Sequencing)
 DESCRIPTION
 
 Python tools for handling genotyping by sequencing data. 
-The UNEAK pipeline HapMap (hmp.txt) and HapMapCount (hmc.txt) files are taken on line 144 & 145. Either change the 
+The UNEAK pipeline HapMap (hmp.txt) and HapMapCount (hmc.txt) files act as input. 
 
 
 USAGE NOTES 
