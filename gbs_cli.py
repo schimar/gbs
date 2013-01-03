@@ -116,45 +116,46 @@ def get_single_counts(count_list):
 
 
 if __name__ == "__main__":
-#    if sys.argv > 1:
-#        hmp = pd.read_table(sys.argv[2], index_col = 0, header = 0)
-#        hmc = pd.read_table(sys.argv[3], index_col = 0, header = 0)
-#    else:
-    hmp = pd.read_table('HapMap.hmp.txt', index_col = 0, header = 0)
-    hmc = pd.read_table('HapMap.hmc.txt', index_col = 0, header = 0)
-
-    # only use the actual samples
-    hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
-    # drop all the columns with more than 90 (default) per cent 'N's (not yet needed)
-    # hmp_trimmed = drop_N_columns(hmp_trimmed)
-
-    # filter according to read depth count in hmc (default threshold = 4)
-    filter_results = []
-    for i, col in enumerate(hmp_trimmed.columns):
-        base_values = hmp_trimmed[col]
-        count_values = hmc[hmc.columns[i]]
-        filter_results.append(filter_single_col(base_values, count_values))
-
-    df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
-
-    # transform ambiguous iupac codes to unambiguous nucleotides
-    unambiguous_results = []
-    for i, col in enumerate(hmp_trimmed.columns):
-        base_list = hmp_trimmed[col]
-        count_list = hmc[hmc.columns[i]]
-        unambiguous_results.append(get_loci_from_iupac_codes(base_list, count_list, hmp.alleles))
-
-    data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
-
-    # sort the data according to abundance of bases (as opposed to 'N's)
-    data_sorted4 = sort_loci_pdDF(data_unambiguous)
-
-    # the alleles column gets to be inserted
-    data_sorted4.insert(0, 'alleles', hmp.ix[:, 'alleles'])
-    # and the additional information as well
-    df2 = hmp.ix[:, 'chrom': 'QCcode']
-    df = data_sorted4.join(df2)
-    # some plotting to see the distributions
-    # write the output to a csv file
-    df.to_csv("data_sorted4.csv")
+    if len(sys.argv > 1):
+        hmp = pd.read_table(sys.argv[2], index_col = 0, header = 0)
+        hmc = pd.read_table(sys.argv[3], index_col = 0, header = 0)
+    else:
+		hmp = pd.read_table('HapMap.hmp.txt', index_col = 0, header = 0)
+		hmc = pd.read_table('HapMap.hmc.txt', index_col = 0, header = 0)
+		
+		# only use the actual samples
+		hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
+		# drop all the columns with more than 90 (default) per cent 'N's (not yet needed)
+		# hmp_trimmed = drop_N_columns(hmp_trimmed)
+		
+		# filter according to read depth count in hmc (default threshold = 4)
+		filter_results = []
+		for i, col in enumerate(hmp_trimmed.columns):
+			base_values = hmp_trimmed[col]
+			count_values = hmc[hmc.columns[i]]
+			filter_results.append(filter_single_col(base_values, count_values))
+		
+		df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+		
+		# transform ambiguous iupac codes to unambiguous nucleotides
+		unambiguous_results = []
+		for i, col in enumerate(hmp_trimmed.columns):
+			base_list = hmp_trimmed[col]
+			count_list = hmc[hmc.columns[i]]
+			unambiguous_results.append(get_loci_from_iupac_codes(base_list, count_list, hmp.alleles))
+		
+		data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+		
+		# sort the data according to abundance of bases (as opposed to 'N's)
+		data_sorted4 = sort_loci_pdDF(data_unambiguous)
+		
+		# the alleles column gets to be inserted
+		data_sorted4.insert(0, 'alleles', hmp.ix[:, 'alleles'])
+		# and the additional information as well
+		df2 = hmp.ix[:, 'chrom': 'QCcode']
+		df = data_sorted4.join(df2)
+		
+		# some plotting to see the distributions
+		# write the output to a csv file
+		df.to_csv("data_sorted4.csv")
 
