@@ -3,6 +3,7 @@
 from __future__ import division
 import csv
 import sys
+import itertools
 
 import numpy as np
 import scipy as sp
@@ -112,6 +113,20 @@ def get_single_counts(count_list):
             count_1, count_2 = count.split('|')
         co_list.append([count_1, count_2])
     return co_list
+    
+
+def get_genepop_codes(allele_list):
+    '''Transforms the alleles (in the form of e.g. 'A/A') into numeric type (where 01 = A, 02 = C, 03 = G, 04 = T)'''
+    output = []
+    nucleo = dict([['A', '01'], ['C', '02'], ['G', '03'], ['T', '04']])
+    for alleles in allele_list:
+		if alleles == 'N':
+			value = '0000'
+		else:
+			allele_1, allele_2 = alleles.split('/')
+			value = nucleo.get(allele_1) + nucleo.get(allele_2)
+        output.append(value)
+    return output
 
 
 
