@@ -26,7 +26,7 @@ for i, col in enumerate(hmp_trimmed.columns):
 
 df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
-# transform ambiguous iupac codes to unambiguous nucleotides
+# transform ambiguous iupac codes to unambiguous nucleotides and (2) alleles 
 unambiguous_results = []
 for i, col in enumerate(hmp_trimmed.columns):
     base_list = hmp_trimmed[col]
@@ -41,6 +41,16 @@ data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.i
 # sort the data according to abundance of bases (as opposed to 'N's)
 data_sorted4 = sort_loci_pdDF(data_unambiguous)
 
+# get_genepop_codes:
+
+numeric_alleles = []
+for col in data_unambiguous.columns:
+    allele_list = data_unambiguous[col]
+    numeric_alleles.append(get_genepop_codes(allele_list))
+
+
+
+##### do we need this?
 # the alleles column gets to be inserted
 data_sorted4.insert(0, 'alleles', hmp.ix[:, 'alleles'])
 # and the additional information as well
@@ -169,19 +179,6 @@ d = pd.Series(    #            5                                 10
 
 ########################################################################
 
-# hmc subset for plot
-
-def get_single_counts(count_list):
-    co_list = []
-    for count in count_list:
-        if count == '0|0':
-            continue
-        else:
-            count_1, count_2 = count.split('|')
-        co_list.append([count_1, count_2])
-    return co_list
-####
-
 co = hmc.ix[:,'FLFL04': 'WWA30']
 
 # loop over all the columns and get the values in one big list
@@ -245,7 +242,8 @@ plt.scatter(co_val[:,0], co_val[:,1])
 sub_co_val = co_val[co_val.allele_type > 3].copy()
 
 ########################################################################
-########################################################################
+###################################################################
+###################################################################
 
 # convert pd.DataFrame to Genepop
 
@@ -257,23 +255,94 @@ gbs = data.ix[:, 'MI17':'KFO4replicate']
 
 # first loop over those and create the genotypes
 #  01:A 02:C 03:G 04:T    (as strings)
-sub = hmp.ix[:20,10:]
 
+data = data_unambiguous.ix[:30,:].copy()
+a = data.MI17.copy()
+b = data.ix[:,140].copy()
 
+data = pd.read_csv("subset_unambiguous_4.csv", header = 0, index_col = 0)
+
+##################################################################
+### get_genepop_codes:
+
+numeric_alleles = []
+for col in data.columns:
+    allele_list = data[col]
+    numeric_alleles.append(get_genepop_codes(allele_list))
+# I could possibly go on, without the zip(*_) 
+
+#hmpp = hmp_trimmed.ix[:30,:]
+
+data_numeric = pd.DataFrame(numeric_alleles, index = hmp.columns, columns= hmp.index)
 
 ###
-def filter_single_col(base_list, count_list, threshold = 4):
-    '''Returns a list of nucleotides filtered (threshold, default = 4) by number of occurence of a sequencing run at specific loci in a list of bases'''
-    output = []
-    for i, alleles in enumerate(base_list):
-        if alleles == 'N':
-            value = '0000'
-        else:
-            if alleles == 'A/A':
-                value = '0101'
-            elif:
+pops = []
+for pop in data.columns:
+    pops.append(re.findall('([A-Z]+)', pop))
 
-
-        output.append(value)
-    return output
+np.unique(np.array(pops))
 ###
+
+###
+prev_pop = ''
+index = []
+for i, row in enumerate(data_numeric.index):
+    population = re.findall('([A-Z]+)', row)
+    if population == prev_pop:
+	index.append(row)
+    else:
+	index.append('POP')
+	index.append(row)
+    prev_pop = population
+
+output = pd.DataFrame(index = index, columns = data_numeric.columns, dtype=str)
+##
+df1.join(df2, how='outer')
+
+concat(output, data_numeric, axis=0, join='outer', join_axes=None, ignore_index=False)
+
+
+# looping over rows seems to be inefficient, so maybe zip(* back and loop over columns ?
+data_numeric.xs('FLFL04')
+
+
+
+# if no new population:
+data_numeric.ix[i, :]
+
+# if new population:
+insert line w/ POP
+
+
+
+
+
+################################################
+####### now with columns...
+data_numeric = pd.DataFrame(zip(*numeric_alleles), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+###
+data = data_numeric.ix[:3000, :].copy()
+
+for i, col in enumerate(data.columns):
+    print i, col
+    
+prev_pop = ''
+col = []
+for i, pop in enumerate(data.columns):
+    population = re.findall('([A-Z]+)', pop)
+    if population == prev_pop:
+	col.append(pop)
+    else:
+	col.append('POP')
+	col.append(pop)
+    prev_pop = population
+
+
+
+out = pd.DataFrame(columns = index, dtype=str)
+###
+
+# np.array
+
+data_numeric = np.array(zip(*numeric_alleles))
+

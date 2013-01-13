@@ -4,11 +4,13 @@ from __future__ import division
 import csv
 import sys
 import itertools
+import re
 
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
 import pandas as pd
+ 
 
 ###
 def drop_N_columns(data, drop_level = 0.9):
@@ -98,8 +100,8 @@ def sort_loci_pdDF(data):
     row_order = row_sums.argsort()
     col_order = col_sums.argsort()
     indivID_sorted = data.index[row_order]
-    locus_sorted = data.columns[col_order]
-    data_sorted = np.array(data_strip_loci)[row_order][:, col_order]
+    #locus_sorted = data.columns[col_order]
+    data_sorted = np.array(data_strip_loci)[row_order]#[:, col_order]
     data_sorted = pd.DataFrame(data_sorted, index = indivID_sorted, columns= locus_sorted)
     return data_sorted
 
@@ -141,7 +143,7 @@ def get_allele_types(data):
 def get_genepop_codes(allele_list):
     '''Transforms the alleles (in the form of e.g. 'A/A') into numeric type (where 01 = A, 02 = C, 03 = G, 04 = T)'''
     output = []
-    nucleo = dict([['A', '01'], ['C', '02'], ['G', '03'], ['T', '04']])
+    nucleo = dict([['A', '01'], ['C', '02'], ['G', '03'], ['T', '04'], ['?', '00']])
     for alleles in allele_list:
 		if alleles == 'N':
 			value = '0000'
@@ -181,6 +183,16 @@ for i, col in enumerate(hmp_trimmed.columns):
     unambiguous_results.append(get_loci_from_iupac_codes(base_list, count_list, hmp.alleles))
 
 data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+
+# transform dataset into genepop format (first step)
+numeric_alleles = []
+for col in data.columns:
+    allele_list = data[col]
+    numeric_alleles.append(get_genepop_codes(allele_list))
+
+data_numeric = pd.DataFrame(zip(*numeric_alleles), index = hmp_trimmed.ix[2:,:].index, columns=hmp_trimmed.ix[2:,:].columns, dtype = np.str)
+
+
 
 # sort the data according to abundance of bases (as opposed to 'N's)
 data_sorted4 = sort_loci_pdDF(data_unambiguous)
