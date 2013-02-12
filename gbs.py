@@ -167,13 +167,13 @@ hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
 # hmp_trimmed = drop_N_columns(hmp_trimmed)
 
 # filter according to read depth count in hmc (default threshold = 4)
-filter_results = []
-for i, col in enumerate(hmp_trimmed.columns):
-    base_values = hmp_trimmed[col]
-    count_values = hmc[hmc.columns[i]]
-    filter_results.append(filter_single_col(base_values, count_values))
+# filter_results = []
+#for i, col in enumerate(hmp_trimmed.columns):
+#    base_values = hmp_trimmed[col]
+#    count_values = hmc[hmc.columns[i]]
+#    filter_results.append(filter_single_col(base_values, count_values))
 
-df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+# df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
 # transform ambiguous iupac codes to unambiguous nucleotides
 unambiguous_results = []
@@ -186,8 +186,8 @@ data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.i
 
 # transform dataset into genepop format (first step)
 numeric_alleles = []
-for col in data.columns:
-    allele_list = data[col]
+for col in data_unambiguous.columns:
+    allele_list = data_unambiguous[col]
     numeric_alleles.append(get_genepop_codes(allele_list))
 
 data_numeric = pd.DataFrame(zip(*numeric_alleles), index = hmp_trimmed.ix[2:,:].index, columns=hmp_trimmed.ix[2:,:].columns, dtype = np.str)

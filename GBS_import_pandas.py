@@ -319,30 +319,66 @@ insert line w/ POP
 
 ################################################
 ####### now with columns...
-data_numeric = pd.DataFrame(zip(*numeric_alleles), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+data = pd.DataFrame(zip(*numeric_alleles), index = data_sorted4.index, columns=data_sorted4.columns, dtype = np.str)
 ###
-data = data_numeric.ix[:3000, :].copy()
+data = data.ix[:3000, :].copy()
 
-for i, col in enumerate(data.columns):
-    print i, col
-    
+###
 prev_pop = ''
-col = []
+header = []
 for i, pop in enumerate(data.columns):
     population = re.findall('([A-Z]+)', pop)
     if population == prev_pop:
-	col.append(pop)
+	header.append(pop)
     else:
-	col.append('POP')
-	col.append(pop)
+	header.append('POP')
+	header.append(pop)
     prev_pop = population
 
-
-
-out = pd.DataFrame(columns = index, dtype=str)
 ###
+empty_list = []
+for val in range(len(data)):
+    empty_list.append([])
 
-# np.array
+new = []
+for i, sample in enumerate(header):
+    if sample == 'POP':
+	new.append(empty_list)
+    else:
+	new.append(list(data[sample]))
 
-data_numeric = np.array(zip(*numeric_alleles))
 
+loci = str(' ')
+for i in range(len(data.index)+1)[1:]:
+    loci += ('Loc' + str(i) + ', ')
+
+zipped = zip(*new)
+header.insert(0, '')
+zipped.insert(0, header)
+new_unzipped = zip(*zipped)
+
+new.insert(0, loci)
+
+###
+# how to insert that shit without problems at writing...
+
+w = csv.writer(open('output.gen','w'))
+
+w.writerow(new_unzipped)
+
+outfile = open('output.gen', 'w')
+
+writer = csv.writer(outfile)
+
+
+for row in new_unzipped:
+    writer.writerow(row)
+outfile.close()
+
+# the rows & cols aren't right...
+
+arr = pd.DataFrame(new, index = header, columns = data.index)
+
+
+
+###

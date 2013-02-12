@@ -145,13 +145,13 @@ if __name__ == "__main__":
 	# hmp_trimmed = drop_N_columns(hmp_trimmed)
 	
 	# filter according to read depth count in hmc (default threshold = 4)
-	filter_results = []
-	for i, col in enumerate(hmp_trimmed.columns):
-		base_values = hmp_trimmed[col]
-		count_values = hmc[hmc.columns[i]]
-		filter_results.append(filter_single_col(base_values, count_values))
+	#filter_results = []
+	#for i, col in enumerate(hmp_trimmed.columns):
+	#	base_values = hmp_trimmed[col]
+	#	count_values = hmc[hmc.columns[i]]
+	#	filter_results.append(filter_single_col(base_values, count_values))
 	
-	df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+	# df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 	
 	# transform ambiguous iupac codes to unambiguous nucleotides
 	unambiguous_results = []
