@@ -93,8 +93,8 @@ def sort_loci_np(data, column_headers, row_headers):
 
 def sort_loci_pdDF(data):
     '''Strips the column headers as well as the first column from the input pd.DataFrame and sorts the loci according to highest abundance of bases'''
-    data_strip_loci = data.ix[:, 'FLFL04': 'WWA30']
-    data_not_N = data_strip_loci != 'N'
+    #data_strip_loci = data.ix[:, 'FLFL04': 'WWA30']
+    data_not_N = data != 'N'
     row_sums = -1*(np.sum(data_not_N, axis=1))
     col_sums = -1*(np.sum(data_not_N, axis=0))
     row_order = row_sums.argsort()
