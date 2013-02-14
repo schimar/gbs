@@ -30,7 +30,7 @@ BUILD NOTES
 
 TODO
 
-1) sort_loci_pdDF: function is hardcoded...('FLFL04':'WWA30') 
+1) 
 
 2) GenePop
                       - establish data transfer to GenePop file format
