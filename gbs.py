@@ -63,34 +63,6 @@ def import_raw_loci(filename):
     return np.genfromtxt(filename, dtype=str, delimiter='\t')
 
 
-def sort_loci_def(data, column_headers, row_headers):
-    '''Strips the column headers as well as the first column from the input np.array and sorts the loci and individuals according to highest abundance of bases'''
-    indivID = data[0, 1:]
-    locus = data[1:, 0]
-    data_strip_header = sp.delete(data, 0, 0)
-    data_strip_loci_row = sp.delete(data_strip_header, 0, 1)
-    data_not_N = data_strip_loci_row != 'N'
-    row_sums = -1*(np.sum(data_not_N, axis=1))
-    col_sums = -1*(np.sum(data_not_N, axis=0))
-    row_order = row_sums.argsort()
-    col_order = col_sums.argsort()
-    indivID_sorted = indivID[row_order] # was changed (i.e. indivID[col_order])
-    locus_sorted = locus[col_order]
-    data_sorted = data_strip_loci_row[row_order][:, col_order]
-    return data_sorted
-
-def sort_loci_np(data, column_headers, row_headers):
-    '''Strips the column headers as well as the first column from the input np.array and sorts the loci and individuals according to highest abundance of bases'''
-    data_not_N = data != 'N'
-    row_sums = -1*(np.sum(data_not_N, axis=1))
-    col_sums = -1*(np.sum(data_not_N, axis=0))
-    row_order = row_sums.argsort()
-    col_order = col_sums.argsort()
-    indivID_sorted = column_headers[col_order] # was changed (i.e. indivID[col_order])
-    locus_sorted = row_headers[row_order]
-    data_sorted = data[row_order][:, col_order]
-    return data_sorted
-
 def sort_loci_pdDF(data):
     '''Strips the column headers as well as the first column from the input pd.DataFrame and sorts the loci and individuals according to highest abundance of bases'''
     #data_strip_loci = data.ix[:, 'FLFL04': 'WWA30']
