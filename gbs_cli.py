@@ -57,7 +57,7 @@ def get_loci_from_iupac_codes(base_list, count_list, allele_list, threshold = 4)
         ambig.append(value)
     return ambig
 
-def get_MAF_filter(base_list, count_list, allele_list):
+def get_4_bases(base_list, count_list, allele_list):
     '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels'''
     ambig = []
     value = ''
@@ -72,6 +72,22 @@ def get_MAF_filter(base_list, count_list, allele_list):
 	    value = allele_2
 	ambig.append(value)
     return ambig
+
+def get_MAF_filter(base_list, allele_list, maf_threshold= 0.05):
+    '''Returns a list of SNPs where MAF (minor allele frequence) < 0.05 (as default)'''
+    ambig = []
+    value = ''
+    for i, base in enumerate(base_list):
+        allele_1, allele_2 = allele_list[i].split('/')
+	allele_freq_1 = base_list.sum().count(allele_1)
+	allele_freq_2 = base_list.sum().count(allele_2)
+	if allele_freq_1/len(base_list) < maf_threshold:
+	    continue #we don't want this included
+	elif allele_freq_2/len(base_list) < maf_threshold:
+	    continue #same
+	else: 
+	    SNP_list = base_list # include the list into the new df
+    return SNP_list 
 
 def import_raw_loci(filename):
     '''Retrieve sequencing data from the text file and store it in a numpy array'''

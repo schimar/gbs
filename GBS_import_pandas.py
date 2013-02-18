@@ -105,11 +105,43 @@ for i, col in enumerate(hmp_trimmed.columns):
     unambiguous_results.append(get_MAF_filter(base_list, count_list, hmp.alleles))
 
 
-MAF_data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+### keep the df transposed, so col = loci (loop over loci, not samples)
+MAF_data_unambiguous = pd.DataFrame(unambiguous_results, index = hmp_trimmed.columns, columns=hmp_trimmed.index, dtype = np.str)
+
+##
+
+def get_real_MAF_filter(base_list, allele_list, maf_threshold= 0.05):
+    '''Returns a list of SNPs where MAF (minor allele frequence) < 0.05 (as default)'''
+    ambig = []
+    value = ''
+    for i, base in enumerate(base_list):
+        allele_1, allele_2 = allele_list[i].split('/')
+	allele_freq_1 = base_list.sum().count(allele_1)
+	allele_freq_2 = base_list.sum().count(allele_2)
+	if allele_freq_1/len(base_list) < maf_threshold:
+	    continue #we don't want this included
+	elif allele_freq_2/len(base_list) < maf_threshold:
+	    continue #same
+	else: 
+	    SNP_list = base_list # include the list into the new df
+    return SNP_list # how is the columns name being stored?
 
 
 
 
+
+####
+result_list = []
+new_column_list = []
+for i, col in enumerate(MAF_data_unambiguous):
+    base_list = MAF_data_unambiguous[col]
+    allele_list = hmp.alleles
+    result_list.append(get_real_MAF_filter(base_list, allele_list))
+    new_column_list.append(MAF_data_unambiguous.columns[i])
+
+
+    
+    
 
 
 
