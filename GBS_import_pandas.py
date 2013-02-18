@@ -18,13 +18,13 @@ hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
 hmp_trimmed = drop_N_columns(hmp_trimmed)
 
 # filter according to read depth count in hmc (default threshold = 4)
-filter_results = []
-for i, col in enumerate(hmp_trimmed.columns):
-    base_values = hmp_trimmed[col]
-    count_values = hmc[hmc.columns[i]]
-    filter_results.append(filter_single_col(base_values, count_values))
+#filter_results = []
+#for i, col in enumerate(hmp_trimmed.columns):
+#    base_values = hmp_trimmed[col]
+#    count_values = hmc[hmc.columns[i]]
+#    filter_results.append(filter_single_col(base_values, count_values))
 
-df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+#df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
 # transform ambiguous iupac codes to unambiguous nucleotides and (2) alleles 
 unambiguous_results = []
@@ -60,7 +60,59 @@ df = data_sorted4.join(df2)
 # write the output to a csv file
 df.to_csv("data_sorted4.csv")
 
-########################################################################
+####################################################################
+
+# test of MAF (minor allele frequency) approach:
+
+a = hmp_trimmed.ix[2,:]
+b = hmc.ix[2,:152]
+
+a.sum().count('A'), 'A'
+a.sum().count('C'), 'C'
+a.sum().count('G'), 'G'
+a.sum().count('T'), 'T'
+
+
+
+
+# 1) 
+# get_loci_from_iupac needs to be applied on the whole dataset (without the threshold-filter).
+# 2) 
+# if the minor allele divided by total allele count (length of the 'list') is smaller than 0.05: --> exclude the SNP
+
+
+def get_MAF_filter(base_list, count_list, allele_list):
+    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels'''
+    ambig = []
+    value = ''
+    for i, base in enumerate(base_list):
+        count_1, count_2 = map(int, count_list[i].split('|'))
+        allele_1, allele_2 = allele_list[i].split('/')
+        if base == 'N':
+            value = 'N'
+	elif count_1 != 0 and count_2 == 0:
+	    value = str(allele_1)
+        elif count_1 == 0 and count_2 != 0:
+	    value = str(allele_2)
+	ambig.append(value)
+    return ambig
+	
+
+unambiguous_results = []
+for i, col in enumerate(hmp_trimmed.columns):
+    base_list = hmp_trimmed[col]
+    count_list = hmc[hmc.columns[i]]
+    unambiguous_results.append(get_MAF_filter(base_list, count_list, hmp.alleles))
+
+
+MAF_data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+
+
+
+
+
+
+
 ################################# later...
 first_allele = []
 second_allele = []
