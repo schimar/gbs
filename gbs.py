@@ -118,8 +118,8 @@ def sort_loci_pdDF(data):
     col_order = col_sums.argsort()
     indivID_sorted = data.index[row_order]
     #locus_sorted = data.columns[col_order]
-    data_sorted = np.array(data_strip_loci)[row_order]#[:, col_order]
-    data_sorted = pd.DataFrame(data_sorted, index = indivID_sorted, columns= locus_sorted)
+    data_sorted = np.array(data)[row_order]#[:, col_order]
+    data_sorted = pd.DataFrame(data_sorted, index = indivID_sorted, columns= data.columns)
     return data_sorted
 
 def get_single_counts(count_list):
@@ -217,7 +217,7 @@ data_adv = pd.DataFrame(zip(*adv_fil_results), index = hmp_trimmed.index, column
 # here will be the MAF filter:
 
 # sort the data according to abundance of bases (as opposed to 'N's)
-data_sorted4 = sort_loci_pdDF(data_unambiguous)
+data_sorted4 = sort_loci_pdDF(data_adv)
 #########################################################
 # transform dataset into genepop format (first step)
 numeric_alleles = []

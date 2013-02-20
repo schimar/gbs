@@ -156,7 +156,7 @@ def sort_loci_pdDF(data):
     col_order = col_sums.argsort()
     indivID_sorted = data.index[row_order]
     #locus_sorted = data.columns[col_order]
-    data_sorted = np.array(data_strip_loci)[row_order]#[:, col_order]
+    data_sorted = np.array(data)[row_order]#[:, col_order]
     data_sorted = pd.DataFrame(data_sorted, index = indivID_sorted, columns= data.columns)
     return data_sorted
 
