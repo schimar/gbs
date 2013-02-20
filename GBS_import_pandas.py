@@ -15,7 +15,7 @@ hmc = pd.read_table('HapMap.hmc.txt', index_col = 0, header = 0)
 # only use the actual samples
 hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
 # drop all the columns with more than 90 (default) per cent 'N's
-hmp_trimmed = drop_N_columns(hmp_trimmed)
+#hmp_trimmed = drop_N_columns(hmp_trimmed)
 
 # filter according to read depth count in hmc (default threshold = 4)
 #filter_results = []
@@ -102,7 +102,7 @@ unambiguous_results = []
 for i, col in enumerate(hmp_trimmed.columns):
     base_list = hmp_trimmed[col]
     count_list = hmc[hmc.columns[i]]
-    unambiguous_results.append(get_MAF_filter(base_list, count_list, hmp.alleles))
+    unambiguous_results.append(get_4_bases(base_list, count_list, hmp.alleles))
 
 
 ### keep the df transposed, so col = loci (loop over loci, not samples)
@@ -127,20 +127,17 @@ def get_real_MAF_filter(base_list, allele_list, maf_threshold= 0.05):
     return SNP_list # how is the columns name being stored?
 
 
-
-
-
 ####
 result_list = []
 new_column_list = []
 for i, col in enumerate(MAF_data_unambiguous):
     base_list = MAF_data_unambiguous[col]
     allele_list = hmp.alleles
-    result_list.append(get_real_MAF_filter(base_list, allele_list))
+    result_list.append(get_MAF_filter(base_list, allele_list))
     new_column_list.append(MAF_data_unambiguous.columns[i])
 
 
-    
+MAF_005 = pd.DataFrame(result_list, index = hmp_trimmed.columns, 
     
 
 

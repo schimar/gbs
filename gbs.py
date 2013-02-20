@@ -38,7 +38,7 @@ def filter_single_col(base_list, count_list, threshold = 4):
         output.append(value)
     return output
 
-def get_loci_from_iupac_codes(base_list, count_list, allele_list, threshold = 4):
+def get_alleles_4base(base_list, count_list, allele_list, threshold = 4):
     '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels and the read-depth (default = 4)'''
     ambig = []
     value = ''
@@ -57,7 +57,36 @@ def get_loci_from_iupac_codes(base_list, count_list, allele_list, threshold = 4)
         ambig.append(value)
     return ambig
 
-def get_4_bases(base_list, count_list, allele_list):
+
+def get_alleles_adv(base_list, count_list, allele_list, threshold = 4):
+    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels. A read-depth threshold (default = 4) is applied. If one allele is over the threshold, but not the second one, it will be checked for having at least double the amount of the threshold, to qualify as heterozygote (if not, it'll be '?'  '''
+    ambig = []
+    value = ''
+    for i, base in enumerate(base_list):
+        count_1, count_2 = map(int, count_list[i].split('|'))
+        allele_1, allele_2 = allele_list[i].split('/')
+        if base == 'N':
+            value = 'N'
+        else:
+            if count_1 >= threshold and count_2 < threshold:
+                if count_1 <= 2*threshold:
+		    value = str(allele_1 + '/' + '?')
+		elif count_1 > 2*threshold:
+		    value =  str(allele_1 + '/' + allele_1)
+	    elif count_1 < threshold and count_2 >= threshold:
+		if count_2 <= 2*threshold:
+		    value = str(allele_2 + '/' + '?')
+		elif count_2 > 2*threshold:
+		    value = str(allele_2 + '/' + allele_2)
+            elif count_1 >= threshold and count_2 >= threshold:
+                value = str(allele_1 + '/' + allele_2)
+	    else:
+		value = 'N' 
+	ambig.append(value)
+    return ambig
+
+
+def get_alleles_4base(base_list, count_list, allele_list):
     '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels'''
     ambig = []
     value = ''
@@ -72,22 +101,6 @@ def get_4_bases(base_list, count_list, allele_list):
 	    value = allele_2
 	ambig.append(value)
     return ambig
-
-def get_MAF_filter(base_list, allele_list, maf_threshold= 0.05):
-    '''Returns a list of SNPs where MAF (minor allele frequence) < 0.05 (as default)'''
-    ambig = []
-    value = ''
-    for i, base in enumerate(base_list):
-        allele_1, allele_2 = allele_list[i].split('/')
-	allele_freq_1 = base_list.sum().count(allele_1)
-	allele_freq_2 = base_list.sum().count(allele_2)
-	if allele_freq_1/len(base_list) < maf_threshold:
-	    continue #we don't want this included
-	elif allele_freq_2/len(base_list) < maf_threshold:
-	    continue #same
-	else: 
-	    SNP_list = base_list # include the list into the new df
-    return SNP_list 
 
 
 def import_raw_loci(filename):
@@ -119,7 +132,6 @@ def get_single_counts(count_list):
             count_1, count_2 = count.split('|')
         co_list.append([count_1, count_2])
     return co_list
-
 
 
 def get_allele_types(data):
@@ -180,13 +192,28 @@ hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
 # df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
 # transform ambiguous iupac codes to unambiguous nucleotides
+# filter with threshold = 4 and no question marks!
 unambiguous_results = []
 for i, col in enumerate(hmp_trimmed.columns):
     base_list = hmp_trimmed[col]
     count_list = hmc[hmc.columns[i]]
-    unambiguous_results.append(get_loci_from_iupac_codes(base_list, count_list, hmp.alleles))
+    unambiguous_results.append(get_alleles_4base(base_list, count_list, hmp.alleles))
 
 data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+###
+
+
+# transform ambiguous iupac codes to unambiguous nucleotides
+# filter with threshold = 4 and '?' where threshold of 2nd allele is < 4 !
+unambiguous_results = []
+for i, col in enumerate(hmp_trimmed.columns):
+    base_list = hmp_trimmed[col]
+    count_list = hmc[hmc.columns[i]]
+    unambiguous_results.append(get_alleles_queMar(base_list, count_list, hmp.alleles))
+
+data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+####
+
 
 # transform dataset into genepop format (first step)
 numeric_alleles = []

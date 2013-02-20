@@ -37,9 +37,10 @@ def filter_single_col(base_list, count_list, threshold = 4):
         output.append(value)
     return output
 
-def get_loci_from_iupac_codes(base_list, count_list, allele_list, threshold = 4):
+def get_alleles_4base(base_list, count_list, allele_list, threshold = 4):
     '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels and the read-depth (default = 4)'''
     ambig = []
+    value = ''
     for i, base in enumerate(base_list):
         count_1, count_2 = map(int, count_list[i].split('|'))
         allele_1, allele_2 = allele_list[i].split('/')
@@ -52,12 +53,11 @@ def get_loci_from_iupac_codes(base_list, count_list, allele_list, threshold = 4)
                 value = str(allele_2 + '/' + allele_2)
             elif count_1 >= threshold and count_2 >= threshold:
                 value = str(allele_1 + '/' + allele_2)
-	    else:
-		value = 'N'
         ambig.append(value)
     return ambig
 
-def get_4_bases(base_list, count_list, allele_list):
+
+def get_alleles_adv(base_list, count_list, allele_list, threshold = 4):
     '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels'''
     ambig = []
     value = ''
@@ -66,10 +66,61 @@ def get_4_bases(base_list, count_list, allele_list):
         allele_1, allele_2 = allele_list[i].split('/')
         if base == 'N':
             value = 'N'
-	elif count_1 != 0 and count_2 == 0:
-	    value = allele_1
-        elif count_1 == 0 and count_2 != 0:
-	    value = allele_2
+        else:
+            if count_1 >= threshold and count_2 < threshold:
+                value =  str(allele_1 + '/' + '?')
+            elif count_1 < threshold and count_2 >= threshold:
+                value = str('?' + '/' + allele_2)
+            elif count_1 >= threshold and count_2 >= threshold:
+                value = str(allele_1 + '/' + allele_2)
+	    else:
+		value = 'N' 
+        ambig.append(value)
+    return ambig
+
+def get_alleles_4base(base_list, count_list, allele_list, threshold = 4):
+    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels and the read-depth (default = 4)'''
+    ambig = []
+    value = ''
+    for i, base in enumerate(base_list):
+        count_1, count_2 = map(int, count_list[i].split('|'))
+        allele_1, allele_2 = allele_list[i].split('/')
+        if base == 'N':
+            value = 'N'
+        else:
+            if count_1 >= threshold and count_2 < threshold:
+                value =  str(allele_1 + '/' + allele_1)
+            elif count_1 < threshold and count_2 >= threshold:
+                value = str(allele_2 + '/' + allele_2)
+            elif count_1 >= threshold and count_2 >= threshold:
+                value = str(allele_1 + '/' + allele_2)
+        ambig.append(value)
+    return ambig
+
+def get_alleles_adv(base_list, count_list, allele_list, threshold = 4):
+    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels. A read-depth threshold (default = 4) is applied. If one allele is over the threshold, but not the second one, it will be checked for having at least double the amount of the threshold, to qualify as heterozygote (if not, it'll be '?'  '''
+    ambig = []
+    value = ''
+    for i, base in enumerate(base_list):
+        count_1, count_2 = map(int, count_list[i].split('|'))
+        allele_1, allele_2 = allele_list[i].split('/')
+        if base == 'N':
+            value = 'N'
+        else:
+            if count_1 >= threshold and count_2 < threshold:
+                if count_1 <= 2*threshold:
+		    value = str(allele_1 + '/' + '?')
+		elif count_1 > 2*threshold:
+		    value =  str(allele_1 + '/' + allele_1)
+	    elif count_1 < threshold and count_2 >= threshold:
+		if count_2 <= 2*threshold:
+		    value = str(allele_2 + '/' + '?')
+		elif count_2 > 2*threshold:
+		    value = str(allele_2 + '/' + allele_2)
+            elif count_1 >= threshold and count_2 >= threshold:
+                value = str(allele_1 + '/' + allele_2)
+	    else:
+		value = 'N' 
 	ambig.append(value)
     return ambig
 
@@ -77,6 +128,7 @@ def get_MAF_filter(base_list, allele_list, maf_threshold= 0.05):
     '''Returns a list of SNPs where MAF (minor allele frequence) < 0.05 (as default)'''
     ambig = []
     value = ''
+    SNP_list = []
     for i, base in enumerate(base_list):
         allele_1, allele_2 = allele_list[i].split('/')
 	allele_freq_1 = base_list.sum().count(allele_1)
@@ -135,6 +187,7 @@ def get_genepop_codes(allele_list):
 
 
 if __name__ == "__main__":
+    # that's old stuff, currently, don't use this from the command line, but instead use the gbs.py version !
     if len(sys.argv > 1):
         hmp = pd.read_table(sys.argv[2], index_col = 0, header = 0)
         hmc = pd.read_table(sys.argv[3], index_col = 0, header = 0)
