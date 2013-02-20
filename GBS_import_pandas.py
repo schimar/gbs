@@ -27,20 +27,36 @@ hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
 #df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
 # transform ambiguous iupac codes to unambiguous nucleotides and (2) alleles 
+# filter with threshold = 4 and no question marks!
 unambiguous_results = []
 for i, col in enumerate(hmp_trimmed.columns):
     base_list = hmp_trimmed[col]
     count_list = hmc[hmc.columns[i]]
-    unambiguous_results.append(get_loci_from_iupac_codes(base_list, count_list, hmp.alleles))
+    unambiguous_results.append(get_alleles_4base(base_list, count_list, hmp.alleles))
 
 data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+###
 
-# alternatively:
-# data = np.array(zip(*results))
 
+# transform ambiguous iupac codes to unambiguous nucleotides
+# filter with threshold = 4 and '?' where threshold of 2nd allele is < 4 (if 1st allele < 2* threshold)!
+
+adv_fil_results = []
+for i, col in enumerate(hmp_trimmed.columns):
+    base_list = hmp_trimmed[col]
+    count_list = hmc[hmc.columns[i]]
+    adv_fil_results.append(get_alleles_adv(base_list, count_list, hmp.alleles))
+
+data_adv = pd.DataFrame(zip(*adv_fil_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+####
+
+###########
 # sort the data according to abundance of bases (as opposed to 'N's)
 data_sorted4 = sort_loci_pdDF(data_unambiguous)
 
+
+
+###########################################################
 # get_genepop_codes:
 
 numeric_alleles = []

@@ -204,17 +204,21 @@ data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.i
 
 
 # transform ambiguous iupac codes to unambiguous nucleotides
-# filter with threshold = 4 and '?' where threshold of 2nd allele is < 4 !
-unambiguous_results = []
+# filter with threshold = 4 and '?' where threshold of 2nd allele is < 4 (if 1st allele < 2* threshold)!
+
+adv_fil_results = []
 for i, col in enumerate(hmp_trimmed.columns):
     base_list = hmp_trimmed[col]
     count_list = hmc[hmc.columns[i]]
-    unambiguous_results.append(get_alleles_queMar(base_list, count_list, hmp.alleles))
+    adv_fil_results.append(get_alleles_adv(base_list, count_list, hmp.alleles))
 
-data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+data_adv = pd.DataFrame(zip(*adv_fil_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 ####
+# here will be the MAF filter:
 
-
+# sort the data according to abundance of bases (as opposed to 'N's)
+data_sorted4 = sort_loci_pdDF(data_unambiguous)
+#########################################################
 # transform dataset into genepop format (first step)
 numeric_alleles = []
 for col in data_unambiguous.columns:
@@ -225,8 +229,7 @@ data_numeric = pd.DataFrame(zip(*numeric_alleles), index = hmp_trimmed.ix[2:,:].
 
 
 
-# sort the data according to abundance of bases (as opposed to 'N's)
-data_sorted4 = sort_loci_pdDF(data_unambiguous)
+
 
 # the alleles column gets to be inserted
 data_sorted4.insert(0, 'alleles', hmp.ix[:, 'alleles'])
