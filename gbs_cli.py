@@ -58,47 +58,7 @@ def get_alleles_4base(base_list, count_list, allele_list, threshold = 4):
 
 
 def get_alleles_adv(base_list, count_list, allele_list, threshold = 4):
-    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels'''
-    ambig = []
-    value = ''
-    for i, base in enumerate(base_list):
-        count_1, count_2 = map(int, count_list[i].split('|'))
-        allele_1, allele_2 = allele_list[i].split('/')
-        if base == 'N':
-            value = 'N'
-        else:
-            if count_1 >= threshold and count_2 < threshold:
-                value =  str(allele_1 + '/' + '?')
-            elif count_1 < threshold and count_2 >= threshold:
-                value = str('?' + '/' + allele_2)
-            elif count_1 >= threshold and count_2 >= threshold:
-                value = str(allele_1 + '/' + allele_2)
-	    else:
-		value = 'N' 
-        ambig.append(value)
-    return ambig
-
-def get_alleles_4base(base_list, count_list, allele_list, threshold = 4):
-    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels and the read-depth (default = 4)'''
-    ambig = []
-    value = ''
-    for i, base in enumerate(base_list):
-        count_1, count_2 = map(int, count_list[i].split('|'))
-        allele_1, allele_2 = allele_list[i].split('/')
-        if base == 'N':
-            value = 'N'
-        else:
-            if count_1 >= threshold and count_2 < threshold:
-                value =  str(allele_1 + '/' + allele_1)
-            elif count_1 < threshold and count_2 >= threshold:
-                value = str(allele_2 + '/' + allele_2)
-            elif count_1 >= threshold and count_2 >= threshold:
-                value = str(allele_1 + '/' + allele_2)
-        ambig.append(value)
-    return ambig
-
-def get_alleles_adv(base_list, count_list, allele_list, threshold = 4):
-    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels. A read-depth threshold (default = 4) is applied. If one allele is over the threshold, but not the second one, it will be checked for having at least double the amount of the threshold, to qualify as heterozygote (if not, it'll be '?'  '''
+    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels. A read-depth threshold (default = 4) is applied. If one allele is over the threshold, but not the second one, it will be checked for having at least double the amount of the threshold, to qualify as heterozygote (if not, it'll be '?')  '''
     ambig = []
     value = ''
     for i, base in enumerate(base_list):
@@ -140,6 +100,28 @@ def get_MAF_filter(base_list, allele_list, maf_threshold= 0.05):
 	else: 
 	    SNP_list = base_list # include the list into the new df
     return SNP_list 
+
+###
+
+def get_homo_prob(base_list, count_list, allele_list):
+    '''Related to the filter functions ('get_alleles_4base', 'get_alleles_adv' and 'get_alleles_MAF'), this func calculates the probability of being homozygous for the given loci from the respective output data frame.'''
+    result = []
+    value = ''
+    for i, base in enumerate(base_list):
+        count_1, count_2 = map(int, count_list[i].split('|'))
+        allele_1, allele_2 = allele_list[i].split('/')
+        if base == 'N':
+            value = 'N'
+        else:
+	    if count_1 > count_2:
+		value = (count_1-count_2)/count_1
+	    elif count_2 > count_1:
+		value = (count_2-count_1)/count_2
+	result.append(value)
+    return result
+
+
+
 
 def import_raw_loci(filename):
     '''Retrieve sequencing data from the text file and store it in a numpy array'''

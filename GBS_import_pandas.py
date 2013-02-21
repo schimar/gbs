@@ -358,6 +358,26 @@ a = data.MI17.copy()
 b = data.ix[:,140].copy()
 
 data = pd.read_csv("subset_unambiguous_4.csv", header = 0, index_col = 0)
+################################################
+##### Feb 21 loop for different filters:
+# create one big list:
+
+adv_values = []
+for column in data_unambiguous.columns:
+    for value in data_adv.ix[:, column]:
+        adv_values.append(value)
+
+# loop over list and assign values for barplot
+allele_types = []
+for alleles in adv_values:
+    nucleo = dict([['A', '1'], ['C', '1'], ['G', '1'], ['T', '1'], ['?', '2']])
+    if alleles == 'N':
+	value = '0'
+    else:
+	allele_1, allele_2 = alleles.split('/')
+	value = nucleo.get(allele_1) + nucleo.get(allele_2)
+    allele_types.append(value)
+
 
 ##################################################################
 ### get_genepop_codes:
