@@ -117,10 +117,21 @@ def get_homo_prob(base_list, count_list, allele_list):
 		value = (count_1-count_2)/count_1
 	    elif count_2 > count_1:
 		value = (count_2-count_1)/count_2
+	    else:
+		value = (count_1-count_2)/count_1
 	result.append(value)
     return result
 
-
+def get_pooled_loci(data):
+    '''Append all the cells that are not "N" to one big list'''
+    prob_homo_values = []
+    for column in data.columns:
+        for value in data.ix[:, column]:
+            if value == 'N':
+                continue
+            else:
+                prob_homo_values.append(value)
+    return prob_homo_values
 
 
 def import_raw_loci(filename):

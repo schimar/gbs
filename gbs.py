@@ -10,7 +10,7 @@ import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
 import pandas as pd
- 
+
 
 ###
 def drop_N_columns(data, drop_level = 0.9):
@@ -102,8 +102,21 @@ def get_homo_prob(base_list, count_list, allele_list):
 		value = (count_1-count_2)/count_1
 	    elif count_2 > count_1:
 		value = (count_2-count_1)/count_2
+	    else:
+		value = (count_1-count_2)/count_1
 	result.append(value)
     return result
+
+def get_pooled_loci(data):
+    '''Append all the cells that are not "N" to one big list'''
+    prob_homo_values = []
+    for column in data.columns:
+        for value in data.ix[:, column]:
+            if value == 'N':
+                continue
+            else:
+                prob_homo_values.append(value)
+    return prob_homo_values
 
 
 def import_raw_loci(filename):
@@ -124,6 +137,7 @@ def sort_loci_pdDF(data):
     data_sorted = np.array(data)[row_order]#[:, col_order]
     data_sorted = pd.DataFrame(data_sorted, index = indivID_sorted, columns= data.columns)
     return data_sorted
+
 
 def get_single_counts(count_list):
     '''Take a list or column (in pandas.DataFrame) of form 'no.|no.' and return the respective numbers in two seperate columns, appended in a list'''
@@ -159,6 +173,7 @@ def get_allele_types(data):
         type_list.append(value)
     return type_list
 
+
 def get_genepop_codes(allele_list):
     '''Transforms the alleles (in the form of e.g. 'A/A') into numeric type (where 01 = A, 02 = C, 03 = G, 04 = T)'''
     output = []
@@ -182,20 +197,24 @@ hmc = pd.read_table('HapMap.hmc.txt', index_col = 0, header = 0)
 
 # only use the actual samples
 hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
+#################################################################
+#################################################################
 # drop all the columns with more than 90 (default) per cent 'N's (not yet needed)
 # hmp_trimmed = drop_N_columns(hmp_trimmed)
 
-# filter according to read depth count in hmc (default threshold = 4)
-# filter_results = []
-#for i, col in enumerate(hmp_trimmed.columns):
-#    base_values = hmp_trimmed[col]
-#    count_values = hmc[hmc.columns[i]]
-#    filter_results.append(filter_single_col(base_values, count_values))
 
-# df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+#################################################################
+##### FILTER 
 
-# transform ambiguous iupac codes to unambiguous nucleotides
-# filter with threshold = 4 and no question marks!
+# there are 3 versions (MAF not yet finished)
+# you're basically looping over the column and call the filter functions for each column. Then, you create a pd.dataFrame.
+#################################################################
+
+
+#################################################################
+# simple filter with threshold 4 (for different threshold, change it in the get_alleles_4base(..., threshold= <value>)
+#################################################################
+
 unambiguous_results = []
 for i, col in enumerate(hmp_trimmed.columns):
     base_list = hmp_trimmed[col]
@@ -205,9 +224,10 @@ for i, col in enumerate(hmp_trimmed.columns):
 data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 ###
 
-
-# transform ambiguous iupac codes to unambiguous nucleotides
-# filter with threshold = 4 and '?' where threshold of 2nd allele is < 4 (if 1st allele < 2* threshold)!
+#################################################################
+# advanced filter with threshold (default = 4) and '?' 
+# (where threshold of 2nd allele is < 4, if 1st allele < 2* threshold)
+#################################################################
 
 adv_fil_results = []
 for i, col in enumerate(hmp_trimmed.columns):
@@ -216,13 +236,64 @@ for i, col in enumerate(hmp_trimmed.columns):
     adv_fil_results.append(get_alleles_adv(base_list, count_list, hmp.alleles))
 
 data_adv = pd.DataFrame(zip(*adv_fil_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
-####
-# here will be the MAF filter:
 
+#################################################################
+# MAF filter (not yet finished):
+#################################################################
+
+MAF_results = []
+for i, col in enumerate(hmp_trimmed.columns):
+    base_list = hmp_trimmed[col]
+    count_list = hmc[hmc.columns[i]]
+    MAF_results.append(get_alleles_MAF(base_list, count_list, hmp.alleles))
+
+data_MAF = pd.DataFrame(zip(*MAF_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+
+
+#################################################################
+#################################################################
+# get the PROBABILITY of being HOMOZYGOUS
+
+# (based on the cells of the input dataFrame (here it's the initial (post-UNEAK) dataset), it looks up the values in the hmc count-file and calculates the values (with 0 = 'fully' heterozygous and 1 = 'fully' homozygous))
+#################################################################
+
+homo_prob_results = []
+for i, col in enumerate(hmp_trimmed.columns):
+    base_list = hmp_trimmed[col]
+    count_list = hmc[hmc.columns[i]]
+    homo_prob_results.append(get_homo_prob(base_list, count_list, hmp.alleles))
+
+data_prob = pd.DataFrame(zip(*homo_prob_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+
+prob_homo_values = pd.Series(get_pooled_loci(data_prob))
+
+#################################################################
+# backtrack the count values based on the input filter (not yet finished, see BGS_import_pandas, line 308f.)
+#################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+#################################################################
 # sort the data according to abundance of bases (as opposed to 'N's)
+#################################################################
 data_sorted4 = sort_loci_pdDF(data_adv)
-#########################################################
+
+
+
+#################################################################
 # transform dataset into genepop format (first step)
+#################################################################
+
 numeric_alleles = []
 for col in data_unambiguous.columns:
     allele_list = data_unambiguous[col]
@@ -230,10 +301,19 @@ for col in data_unambiguous.columns:
 
 data_numeric = pd.DataFrame(zip(*numeric_alleles), index = hmp_trimmed.ix[2:,:].index, columns=hmp_trimmed.ix[2:,:].columns, dtype = np.str)
 
+# NOTE: from here on, the bases are numerically encoded
+# you still need to tweak the output file, refer to genepop format for further details
+
+#################################################################
+# write the output file:
+#################################################################
+
+data.to_csv(<output_file_name>.csv)
 
 
-
-
+#################################################################
+# if you want to append the initial columns to the dataFrame (with whichever filter)
+#################################################################
 # the alleles column gets to be inserted
 data_sorted4.insert(0, 'alleles', hmp.ix[:, 'alleles'])
 # and the additional information as well

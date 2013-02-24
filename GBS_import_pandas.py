@@ -89,60 +89,6 @@ a.sum().count('G'), 'G'
 a.sum().count('T'), 'T'
 
 
-
-
-# 1) 
-# get_loci_from_iupac needs to be applied on the whole dataset (without the threshold-filter).
-# 2) 
-# if the minor allele divided by total allele count (length of the 'list') is smaller than 0.05: --> exclude the SNP
-
-
-def get_MAF_filter(base_list, count_list, allele_list):
-    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels'''
-    ambig = []
-    value = ''
-    for i, base in enumerate(base_list):
-        count_1, count_2 = map(int, count_list[i].split('|'))
-        allele_1, allele_2 = allele_list[i].split('/')
-        if base == 'N':
-            value = 'N'
-	elif count_1 != 0 and count_2 == 0:
-	    value = str(allele_1)
-        elif count_1 == 0 and count_2 != 0:
-	    value = str(allele_2)
-	ambig.append(value)
-    return ambig
-	
-
-unambiguous_results = []
-for i, col in enumerate(hmp_trimmed.columns):
-    base_list = hmp_trimmed[col]
-    count_list = hmc[hmc.columns[i]]
-    unambiguous_results.append(get_4_bases(base_list, count_list, hmp.alleles))
-
-
-### keep the df transposed, so col = loci (loop over loci, not samples)
-MAF_data_unambiguous = pd.DataFrame(unambiguous_results, index = hmp_trimmed.columns, columns=hmp_trimmed.index, dtype = np.str)
-
-##
-
-def get_real_MAF_filter(base_list, allele_list, maf_threshold= 0.05):
-    '''Returns a list of SNPs where MAF (minor allele frequence) < 0.05 (as default)'''
-    ambig = []
-    value = ''
-    for i, base in enumerate(base_list):
-        allele_1, allele_2 = allele_list[i].split('/')
-	allele_freq_1 = base_list.sum().count(allele_1)
-	allele_freq_2 = base_list.sum().count(allele_2)
-	if allele_freq_1/len(base_list) < maf_threshold:
-	    continue #we don't want this included
-	elif allele_freq_2/len(base_list) < maf_threshold:
-	    continue #same
-	else: 
-	    SNP_list = base_list # include the list into the new df
-    return SNP_list # how is the columns name being stored?
-
-
 ####
 result_list = []
 new_column_list = []
@@ -363,19 +309,25 @@ data = pd.read_csv("subset_unambiguous_4.csv", header = 0, index_col = 0)
 # create one big list:
 
 adv_values = []
-for column in data_unambiguous.columns:
+for column in data_adv.columns:
     for value in data_adv.ix[:, column]:
         adv_values.append(value)
 
 # loop over list and assign values for barplot
 allele_types = []
 for alleles in adv_values:
-    nucleo = dict([['A', '1'], ['C', '1'], ['G', '1'], ['T', '1'], ['?', '2']])
+    # nucleo = dict([['A', '1'], ['C', '1'], ['G', '1'], ['T', '1'], ['?', '2']])
     if alleles == 'N':
-	value = '0'
+	value = 0
     else:
 	allele_1, allele_2 = alleles.split('/')
-	value = nucleo.get(allele_1) + nucleo.get(allele_2)
+	if allele_1 == allele_2:
+	    value = 11
+	elif allele_1 == '?' or allele_2 == '?':
+	    value = 13
+	else:
+	    value = 12
+	    #nucleo.get(allele_1) + nucleo.get(allele_2)
     allele_types.append(value)
 
 
@@ -393,6 +345,11 @@ for col in data.columns:
 data_numeric = pd.DataFrame(numeric_alleles, index = hmp.columns, columns= hmp.index)
 
 ###
+pops = []
+for pop in data.columns:
+    pops.append(re.findall('([A-Z]+)', pop))
+
+np.unique(np.array(pops))
 pops = []
 for pop in data.columns:
     pops.append(re.findall('([A-Z]+)', pop))
