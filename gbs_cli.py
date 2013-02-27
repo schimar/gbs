@@ -209,12 +209,12 @@ def get_genepop_codes(allele_list):
     output = []
     nucleo = dict([['A', '01'], ['C', '02'], ['G', '03'], ['T', '04'], ['?', '00']])
     for alleles in allele_list:
-		if alleles == 'N':
-			value = '0000'
-		else:
-			allele_1, allele_2 = alleles.split('/')
-			value = nucleo.get(allele_1) + nucleo.get(allele_2)
-        output.append(value)
+	if alleles == 'N':
+	    value = '0000'
+	else:
+	    allele_1, allele_2 = alleles.split('/')
+	    value = nucleo.get(allele_1) + nucleo.get(allele_2)
+	output.append(value)
     return output
 
 

@@ -201,20 +201,19 @@ def get_OLD_allele_types(data):
         type_list.append(value)
     return type_list
 
-
 def get_genepop_codes(allele_list):
     '''Transforms the alleles (in the form of e.g. 'A/A') into numeric type (where 01 = A, 02 = C, 03 = G, 04 = T)'''
     output = []
     nucleo = dict([['A', '01'], ['C', '02'], ['G', '03'], ['T', '04'], ['?', '00']])
     for alleles in allele_list:
-		if alleles == 'N':
-			value = '0000'
-		else:
-			allele_1, allele_2 = alleles.split('/')
-			value = nucleo.get(allele_1) + nucleo.get(allele_2)
-        output.append(value)
+	if alleles == 'N':
+	    value = '0000'
+	else:
+	    allele_1, allele_2 = alleles.split('/')
+	    value = nucleo.get(allele_1) + nucleo.get(allele_2)
+	output.append(value)
     return output
-
+    
 
 #    if sys.argv > 1:
 #        hmp = pd.read_table(sys.argv[2], index_col = 0, header = 0)
