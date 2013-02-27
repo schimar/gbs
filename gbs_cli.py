@@ -114,6 +114,8 @@ def get_alleles_MAF(base_list, count_list, allele_list, MAF = 0.45):
 		    value = str(allele_2 + '/' + allele_2)
 	result.append(value)
     return result 
+
+
 ####
 
 def get_homo_prob(base_list, count_list, allele_list):
@@ -214,8 +216,6 @@ def get_genepop_codes(allele_list):
 			value = nucleo.get(allele_1) + nucleo.get(allele_2)
         output.append(value)
     return output
-    
-####
 
 
 if __name__ == "__main__":
