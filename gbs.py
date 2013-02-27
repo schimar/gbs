@@ -147,6 +147,28 @@ def get_pooled_loci_no_N(data):
     return prob_homo_values
 
 
+def get_zygosity_types(pooled_data):
+    '''loops over a pooled list of all the values from the matrix (see "backtrack the count_values") and creates a new list of the same length and assigns zygosity types (0 = 'N', 11 = homo, 12 = hetero and 13 = "N/?"'''
+    allele_types = []
+    for alleles in all_pooled_values:
+	# nucleo = dict([['A', '1'], ['C', '1'], ['G', '1'], ['T', '1'], ['?', '2']])
+	if alleles == 'N':
+	    value = 0
+	elif alleles == '':
+	    value = 0
+	else:
+	    allele_1, allele_2 = alleles.split('/')
+	    if allele_1 == allele_2:
+		value = 11
+	    elif allele_1 == '?' or allele_2 == '?':
+		value = 13
+	    else:
+		value = 12
+	    #nucleo.get(allele_1) + nucleo.get(allele_2)
+	allele_types.append(value)
+    return allele_types
+
+
 def import_raw_loci(filename):
     '''Retrieve sequencing data from the text file and store it in a numpy array'''
     return np.genfromtxt(filename, dtype=str, delimiter='\t')
@@ -265,7 +287,7 @@ for i, col in enumerate(hmp_trimmed.columns):
 data_adv = pd.DataFrame(zip(*adv_fil_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
 #################################################################
-# MAF filter (not yet finished):
+# MAF filter 
 #################################################################
 
 MAF_results = []
@@ -292,7 +314,7 @@ for i, col in enumerate(hmp_trimmed.columns):
 
 data_prob = pd.DataFrame(zip(*homo_prob_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
-prob_homo_values = pd.Series(get_pooled_loci_No_N(data_prob))
+prob_homo_values = pd.Series(get_pooled_loci_no_N(data_prob))
 
 # NOTE: from here on, I wrote the pd.Series to a csv, to work in R (to plot & the reshape package has a nice counting function)
 
@@ -300,12 +322,14 @@ prob_homo_values = pd.Series(get_pooled_loci_No_N(data_prob))
 # backtrack the count values based on the input filter (not yet finished, see BGS_import_pandas, line 308f.)
 #################################################################
 
+# create one big list:
 
+all_pooled_values = []
+for column in data.columns:
+    for value in data.ix[:, column]:
+        all_pooled_values.append(value)
 
-
-
-
-
+zyg_types = pd.Series(get_zygosity_types(all_pooled_values))
 
 
 

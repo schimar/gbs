@@ -130,22 +130,23 @@ b[0] = 'T'
 b[1] = 'C'
 
 ############# simplified version (w/ just one series/list) working, now extend the whole thing to the whole pie
-
-single = []
-for i, base in enumerate(b):
-    count_1, count_2 = a[i].split('|')
-    if base == 'N':
-        value = 'N'
-    else:
-        if int(count_1) < 4 and int(count_2) < 4:
+def get_zygosity_types(base_list, count_list):
+    single = []
+    for i, base in enumerate(base_list):
+        count_1, count_2 = count_list[i].split('|')
+        if base == 'N':
             value = 'N'
-        elif int(count_1) < 4 and int(count_2) >= 4:
-            value = base # note: check allele_1 and allele_2 and ambiguity codes!
-        elif int(count_1) >= 4 and int(count_2) < 4:
-            value = base
         else:
-            value = base # maybe here: check for ambiguity and potential alleles
-    single.append(value)
+            if int(count_1) < 4 and int(count_2) < 4:
+                value = 'N'
+            elif int(count_1) < 4 and int(count_2) >= 4:
+                value = base
+            elif int(count_1) >= 4 and int(count_2) < 4:
+                value = base
+            else:
+                value = base
+        single.append(value)
+    return single
 
 ########################################################################
 df = pd.DataFrame([['A', 'A', 'C', 'N'], ['N', 'T', 'T', 'N'], ['N', 'T', 'A', 'N'], ['N', 'G', 'T', 'N'], ['N', 'A', 'C', 'N'], ['N', 'A', 'T', 'N'], ['N', 'C', 'G', 'N']])
@@ -304,33 +305,7 @@ a = data.MI17.copy()
 b = data.ix[:,140].copy()
 
 data = pd.read_csv("subset_unambiguous_4.csv", header = 0, index_col = 0)
-################################################
-##### Feb 21 loop for different filters:
-# create one big list:
-
-adv_values = []
-for column in data_adv.columns:
-    for value in data_adv.ix[:, column]:
-        adv_values.append(value)
-
-# loop over list and assign values for barplot
-allele_types = []
-for alleles in adv_values:
-    # nucleo = dict([['A', '1'], ['C', '1'], ['G', '1'], ['T', '1'], ['?', '2']])
-    if alleles == 'N':
-	value = 0
-    else:
-	allele_1, allele_2 = alleles.split('/')
-	if allele_1 == allele_2:
-	    value = 11
-	elif allele_1 == '?' or allele_2 == '?':
-	    value = 13
-	else:
-	    value = 12
-	    #nucleo.get(allele_1) + nucleo.get(allele_2)
-    allele_types.append(value)
-
-
+##################################################################
 ##################################################################
 ### get_genepop_codes:
 

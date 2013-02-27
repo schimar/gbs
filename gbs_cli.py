@@ -148,6 +148,26 @@ def get_pooled_loci_no_N(data):
                 prob_homo_values.append(value)
     return prob_homo_values
 
+def get_zygosity_types(pooled_data):
+    '''loops over a pooled list of all the values from the matrix (see "backtrack the count_values") and creates a new list of the same length and assigns zygosity types (0 = 'N', 11 = homo, 12 = hetero and 13 = "N/?"'''
+    allele_types = []
+    for alleles in all_pooled_values:
+	# nucleo = dict([['A', '1'], ['C', '1'], ['G', '1'], ['T', '1'], ['?', '2']])
+	if alleles == 'N':
+	    value = 0
+	elif alleles == '':
+	    value = 0
+	else:
+	    allele_1, allele_2 = alleles.split('/')
+	    if allele_1 == allele_2:
+		value = 11
+	    elif allele_1 == '?' or allele_2 == '?':
+		value = 13
+	    else:
+		value = 12
+	    #nucleo.get(allele_1) + nucleo.get(allele_2)
+	allele_types.append(value)
+    return allele_types
 
 def import_raw_loci(filename):
     '''Retrieve sequencing data from the text file and store it in a numpy array'''

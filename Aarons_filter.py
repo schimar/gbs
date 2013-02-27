@@ -101,59 +101,8 @@ prob_homo_values = pd.Series(get_pooled_loci(data_prob))
 ##
 plt.hist(prob_homo_values)
 
-####################
-# MAF filter
-####################
-
-# MAF >= 0.45 = heterozygote
-# --->  think about the division by zero !!!!!
-def get_alleles_MAF(base_list, count_list, allele_list, threshold = 4, MAF = 0.45):
-    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels. A read-depth threshold (default = 4) is applied. If one allele of a locus is over the threshold and, however, not the second one, then the MAF will be calculated and, if smaller than the given MAF (default = 0.45), it will be defined as homozygote.'''
-    result = []
-    value = ''
-    for i, base in enumerate(base_list):
-        count_1, count_2 = map(int, count_list[i].split('|'))
-        allele_1, allele_2 = allele_list[i].split('/')
-        if base == 'N':
-            value = 'N'
-        else:
-            if count_1 >= threshold and count_2 < threshold:
-		if count_2/count_1 < MAF:
-		    value =  str(allele_1 + '/' + allele_1)
-		elif count_2/count_1 >= MAF:
-		    value =  str(allele_1 + '/' + '?')
-	    elif count_1 < threshold and count_2 >= threshold:
-		if count_1/count_2 < MAF:
-		    value = str(allele_2 + '/' + allele_2)
-		elif count_1/count_2 >= MAF:
-		    value = str(allele_2 + '/' + '?')
-            elif count_1 >= threshold and count_2 >= threshold:
-		if count_1 < count_2:
-		    if count_1/count_2 < MAF:
-			value = str(allele_2 + '/' + allele_2)
-		    elif count_1/count_2 >= MAF:
-			value = str(allele_1 + '/' + allele_2)
-		elif count_2 < count_1:
-		    if count_2/count_1 < MAF:
-			value = str(allele_1 + '/' + allele_1)
-		    elif count_2/count_1 >= MAF:
-			value = str(allele_1 + '/' + allele_2)
-	    else:
-		value = 'N' 
-        result.append(value)
-    return result
-###
-
-MAF_results = []
-for i, col in enumerate(hmp_trimmed.columns):
-    base_list = hmp_trimmed[col]
-    count_list = hmc[hmc.columns[i]]
-    MAF_results.append(get_alleles_MAF(base_list, count_list, hmp.alleles))
-
-data_MAF = pd.DataFrame(zip(*MAF_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
-
-###
-
+######################################################################
+######################################################################
 
 # pool the content into one big list.
 
@@ -174,6 +123,13 @@ def get_single_alleles(allele_list):
             count_1, count_2 = count.split('|')
         co_list.append([count_1, count_2])
     return all_list
+
+
+
+
+
+
+
 #######################################################
 #######################################################
 
