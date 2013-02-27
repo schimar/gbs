@@ -86,6 +86,34 @@ def get_alleles_adv(base_list, count_list, allele_list, threshold = 4):
     return ambig
 
 # here: MAF filter
+
+def get_alleles_MAF(base_list, count_list, allele_list, MAF = 0.45):
+    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels. The MAF will be calculated and, if smaller than the given MAF (default = 0.45), it will be defined as homozygote, otherwise as heterozygous.'''
+    result = []
+    value = ''
+    for i, base in enumerate(base_list):
+        count_1, count_2 = map(int, count_list[i].split('|'))
+        allele_1, allele_2 = allele_list[i].split('/')
+	if base == 'N':
+	    value = 'N'
+	else:
+	    if count_1 > 0 and count_2 > 0:
+		if count_1 > count_2:
+		    if ((count_1 - count_2)/count_1) >= MAF:
+			value = str(allele_1 + '/' + allele_2)
+		    elif ((count_1 - count_2)/count_1) < MAF:
+			value = str(allele_1 + '/' + allele_1)
+		elif count_2 > count_1:
+		    if ((count_2 - count_1)/count_2) >= MAF:
+			value = str(allele_1 + '/' + allele_2)
+		    elif ((count_2 - count_1)/count_2) < MAF:
+			value = str(allele_2 + '/' + allele_2)
+		elif count_1 > 0 and count_2 == 0:
+		    value = str(allele_1 + '/' + allele_1) 
+		elif count_2 > 0 and count_1 == 0:
+		    value = str(allele_2 + '/' + allele_2)
+	result.append(value)
+    return result 
 ####
 
 def get_homo_prob(base_list, count_list, allele_list):
@@ -107,7 +135,7 @@ def get_homo_prob(base_list, count_list, allele_list):
 	result.append(value)
     return result
 
-def get_pooled_loci(data):
+def get_pooled_loci_no_N(data):
     '''Append all the cells that are not "N" to one big list'''
     prob_homo_values = []
     for column in data.columns:
@@ -151,7 +179,7 @@ def get_single_counts(count_list):
     return co_list
 
 
-def get_allele_types(data):
+def get_OLD_allele_types(data):
     type_list = []
     for(x,y) in data:
         if x == 0 or y == 0:
@@ -215,13 +243,13 @@ hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
 # simple filter with threshold 4 (for different threshold, change it in the get_alleles_4base(..., threshold= <value>)
 #################################################################
 
-unambiguous_results = []
+alleles_4base_results = []
 for i, col in enumerate(hmp_trimmed.columns):
     base_list = hmp_trimmed[col]
     count_list = hmc[hmc.columns[i]]
-    unambiguous_results.append(get_alleles_4base(base_list, count_list, hmp.alleles))
+    alleles_4base_results.append(get_alleles_4base(base_list, count_list, hmp.alleles))
 
-data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+data_4base = pd.DataFrame(zip(*alleles_4base_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 ###
 
 #################################################################
@@ -265,7 +293,9 @@ for i, col in enumerate(hmp_trimmed.columns):
 
 data_prob = pd.DataFrame(zip(*homo_prob_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
-prob_homo_values = pd.Series(get_pooled_loci(data_prob))
+prob_homo_values = pd.Series(get_pooled_loci_No_N(data_prob))
+
+# NOTE: from here on, I wrote the pd.Series to a csv, to work in R (to plot & the reshape package has a nice counting function)
 
 #################################################################
 # backtrack the count values based on the input filter (not yet finished, see BGS_import_pandas, line 308f.)

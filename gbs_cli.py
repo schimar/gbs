@@ -11,6 +11,7 @@ import scipy as sp
 import matplotlib.pyplot as plt
 import pandas as pd
 
+
 ###
 def drop_N_columns(data, drop_level = 0.9):
     '''Returns a pd.DataFrame, where all columns, which consist of more than 90 per cent (default) 'N's are being dropped'''
@@ -58,7 +59,7 @@ def get_alleles_4base(base_list, count_list, allele_list, threshold = 4):
 
 
 def get_alleles_adv(base_list, count_list, allele_list, threshold = 4):
-    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels. A read-depth threshold (default = 4) is applied. If one allele is over the threshold, but not the second one, it will be checked for having at least double the amount of the threshold, to qualify as heterozygote (if not, it'll be '?')  '''
+    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels. A read-depth threshold (default = 4) is applied. If one allele is over the threshold, but not the second one, it will be checked for having at least double the amount of the threshold, to qualify as heterozygote (if not, it'll be '?'  '''
     ambig = []
     value = ''
     for i, base in enumerate(base_list):
@@ -84,24 +85,36 @@ def get_alleles_adv(base_list, count_list, allele_list, threshold = 4):
 	ambig.append(value)
     return ambig
 
-def get_MAF_filter(base_list, allele_list, maf_threshold= 0.05):
-    '''Returns a list of SNPs where MAF (minor allele frequence) < 0.05 (as default)'''
-    ambig = []
-    value = ''
-    SNP_list = []
-    for i, base in enumerate(base_list):
-        allele_1, allele_2 = allele_list[i].split('/')
-	allele_freq_1 = base_list.sum().count(allele_1)
-	allele_freq_2 = base_list.sum().count(allele_2)
-	if allele_freq_1/len(base_list) < maf_threshold:
-	    continue #we don't want this included
-	elif allele_freq_2/len(base_list) < maf_threshold:
-	    continue #same
-	else: 
-	    SNP_list = base_list # include the list into the new df
-    return SNP_list 
+# here: MAF filter
 
-###
+def get_alleles_MAF(base_list, count_list, allele_list, MAF = 0.45):
+    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels. The MAF will be calculated and, if smaller than the given MAF (default = 0.45), it will be defined as homozygote, otherwise as heterozygous.'''
+    result = []
+    value = ''
+    for i, base in enumerate(base_list):
+        count_1, count_2 = map(int, count_list[i].split('|'))
+        allele_1, allele_2 = allele_list[i].split('/')
+	if base == 'N':
+	    value = 'N'
+	else:
+	    if count_1 > 0 and count_2 > 0:
+		if count_1 > count_2:
+		    if ((count_1 - count_2)/count_1) >= MAF:
+			value = str(allele_1 + '/' + allele_2)
+		    elif ((count_1 - count_2)/count_1) < MAF:
+			value = str(allele_1 + '/' + allele_1)
+		elif count_2 > count_1:
+		    if ((count_2 - count_1)/count_2) >= MAF:
+			value = str(allele_1 + '/' + allele_2)
+		    elif ((count_2 - count_1)/count_2) < MAF:
+			value = str(allele_2 + '/' + allele_2)
+		elif count_1 > 0 and count_2 == 0:
+		    value = str(allele_1 + '/' + allele_1) 
+		elif count_2 > 0 and count_1 == 0:
+		    value = str(allele_2 + '/' + allele_2)
+	result.append(value)
+    return result 
+####
 
 def get_homo_prob(base_list, count_list, allele_list):
     '''Related to the filter functions ('get_alleles_4base', 'get_alleles_adv' and 'get_alleles_MAF'), this func calculates the probability of being homozygous for the given loci from the respective output data frame.'''
@@ -122,7 +135,7 @@ def get_homo_prob(base_list, count_list, allele_list):
 	result.append(value)
     return result
 
-def get_pooled_loci(data):
+def get_pooled_loci_no_N(data):
     '''Append all the cells that are not "N" to one big list'''
     prob_homo_values = []
     for column in data.columns:
@@ -140,7 +153,7 @@ def import_raw_loci(filename):
 
 
 def sort_loci_pdDF(data):
-    '''Strips the column headers as well as the first column from the input pd.DataFrame and sorts the loci according to highest abundance of bases'''
+    '''Strips the column headers as well as the first column from the input pd.DataFrame and sorts the loci and individuals according to highest abundance of bases'''
     #data_strip_loci = data.ix[:, 'FLFL04': 'WWA30']
     data_not_N = data != 'N'
     row_sums = -1*(np.sum(data_not_N, axis=1))
@@ -153,6 +166,7 @@ def sort_loci_pdDF(data):
     data_sorted = pd.DataFrame(data_sorted, index = indivID_sorted, columns= data.columns)
     return data_sorted
 
+
 def get_single_counts(count_list):
     '''Take a list or column (in pandas.DataFrame) of form 'no.|no.' and return the respective numbers in two seperate columns, appended in a list'''
     co_list = []
@@ -163,20 +177,44 @@ def get_single_counts(count_list):
             count_1, count_2 = count.split('|')
         co_list.append([count_1, count_2])
     return co_list
-    
+
+
+def get_OLD_allele_types(data):
+    type_list = []
+    for(x,y) in data:
+        if x == 0 or y == 0:
+            value = 0
+        elif x >= 4 and y >= 4:
+            if x >= 14 or y >= 14:
+                value = 2
+            elif x < 14 or y < 14:
+                value = 1
+        elif x >= 4 and y < 4 or x < 4 and y >= 4:
+            if x - y == abs(1) or y - x == abs(1):
+                value = 3
+            elif x - y == abs(2) or y - x == abs(2):
+                value = 4
+            elif x - y == abs(3) or y - x == abs(3):
+                value = 5
+            elif x - y > abs(3) or y - x > abs(3):
+                value = 6
+        type_list.append(value)
+    return type_list
+
 
 def get_genepop_codes(allele_list):
     '''Transforms the alleles (in the form of e.g. 'A/A') into numeric type (where 01 = A, 02 = C, 03 = G, 04 = T)'''
     output = []
     nucleo = dict([['A', '01'], ['C', '02'], ['G', '03'], ['T', '04'], ['?', '00']])
     for alleles in allele_list:
-	if alleles == 'N':
-	    value = '0000'
-	else:
-	    allele_1, allele_2 = alleles.split('/')
-	    value = nucleo.get(allele_1) + nucleo.get(allele_2)
-	output.append(value)
-    return output 
+		if alleles == 'N':
+			value = '0000'
+		else:
+			allele_1, allele_2 = alleles.split('/')
+			value = nucleo.get(allele_1) + nucleo.get(allele_2)
+        output.append(value)
+    return output
+
 
 
 if __name__ == "__main__":
