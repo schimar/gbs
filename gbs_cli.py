@@ -99,22 +99,23 @@ def get_alleles_MAF(base_list, count_list, allele_list, MAF = 0.45):
 	else:
 	    if count_1 > 0 and count_2 > 0:
 		if count_1 > count_2:
-		    if ((count_1 - count_2)/count_1) >= MAF:
+		    if (count_2/ count_1 + count_2) >= MAF:
 			value = str(allele_1 + '/' + allele_2)
-		    elif ((count_1 - count_2)/count_1) < MAF:
+		    else: 
 			value = str(allele_1 + '/' + allele_1)
 		elif count_2 > count_1:
-		    if ((count_2 - count_1)/count_2) >= MAF:
+		    if (count_1/ count_1 + count_2) >= MAF:
 			value = str(allele_1 + '/' + allele_2)
-		    elif ((count_2 - count_1)/count_2) < MAF:
+		    else:
 			value = str(allele_2 + '/' + allele_2)
+		else: 
+		    value = str(allele_1 + '/' + allele_2)
 	    elif count_1 > 0 and count_2 == 0:
 		value = str(allele_1 + '/' + allele_1) 
 	    elif count_2 > 0 and count_1 == 0:
 		value = str(allele_2 + '/' + allele_2)
 	result.append(value)
     return result 
-
 
 ####
 
@@ -151,7 +152,7 @@ def get_pooled_loci_no_N(data):
 def get_zygosity_types(pooled_data):
     '''loops over a pooled list of all the values from the matrix (see "backtrack the count_values") and creates a new list of the same length and assigns zygosity types (0 = 'N', 11 = homo, 12 = hetero and 13 = "N/?"'''
     allele_types = []
-    for alleles in all_pooled_values:
+    for alleles in pooled_data:
 	# nucleo = dict([['A', '1'], ['C', '1'], ['G', '1'], ['T', '1'], ['?', '2']])
 	if alleles == 'N':
 	    value = 0
