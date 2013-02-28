@@ -54,6 +54,8 @@ def get_alleles_4base(base_list, count_list, allele_list, threshold = 4):
                 value = str(allele_2 + '/' + allele_2)
             elif count_1 >= threshold and count_2 >= threshold:
                 value = str(allele_1 + '/' + allele_2)
+	    else:
+		value = 'N'
         ambig.append(value)
     return ambig
 
@@ -69,14 +71,14 @@ def get_alleles_adv(base_list, count_list, allele_list, threshold = 4):
             value = 'N'
         else:
             if count_1 >= threshold and count_2 < threshold:
-                if count_1 <= 2*threshold:
+                if count_1 < 2*threshold:
 		    value = str(allele_1 + '/' + '?')
-		elif count_1 > 2*threshold:
+		else: 
 		    value =  str(allele_1 + '/' + allele_1)
 	    elif count_1 < threshold and count_2 >= threshold:
-		if count_2 <= 2*threshold:
+		if count_2 < 2*threshold:
 		    value = str(allele_2 + '/' + '?')
-		elif count_2 > 2*threshold:
+		else:
 		    value = str(allele_2 + '/' + allele_2)
             elif count_1 >= threshold and count_2 >= threshold:
                 value = str(allele_1 + '/' + allele_2)
