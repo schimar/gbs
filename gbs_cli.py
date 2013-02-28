@@ -38,6 +38,27 @@ def filter_single_col(base_list, count_list, threshold = 4):
         output.append(value)
     return output
 
+def get_alleles_zero(base_list, count_list, allele_list):
+    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels'''
+    result = []
+    value = ''
+    for i, base in enumerate(base_list):
+	count_1, count_2 = map(int, count_list[i].split('|'))
+	allele_1, allele_2 = allele_list[i].split('/')
+	if base == 'N':
+	    value = 'N'
+	else:
+	    if count_1 > 0 and count_2 == 0:
+		value = str(allele_1 + '/' + allele_1)
+	    elif count_1 == 0 and count_2 > 0:
+		value = str(allele_2 + '/' + allele_2)
+	    elif count_1 > 0 and count_2 > 0:
+		value = str(allele_1 + '/' + allele_2)
+	    else:
+		value = 'N'
+	result.append(value)
+    return result  
+
 def get_alleles_4base(base_list, count_list, allele_list, threshold = 4):
     '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels and the read-depth (default = 4)'''
     ambig = []
