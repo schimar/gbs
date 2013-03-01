@@ -281,13 +281,24 @@ hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
 #################################################################
 ##### FILTER 
 
-# there are 3 versions (MAF not yet finished)
-# you're basically looping over the column and call the filter functions for each column. Then, you create a pd.dataFrame.
+# there are 4 versions 
+# you're basically always looping over the column and calling the filter functions for each column. Then, you create a pd.dataFrame.
 #################################################################
 
+#################################################################
+# SIMPLE FILTER for the initial dataset (without a threshold !!)
+#################################################################
+
+alleles_zero_results = []
+for i, col in enumerate(hmp_trimmed.columns):
+    base_list = hmp_trimmed[col]
+    count_list = hmc[hmc.columns[i]]
+    alleles_zero_results.append(get_alleles_zero(base_list, count_list, hmp.alleles))
+
+data_zero = pd.DataFrame(zip(*alleles_zero_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
 #################################################################
-# simple filter with threshold 4 (for different threshold, change it in the get_alleles_4base(..., threshold= <value>)
+# SIMPLE FILTER with threshold 4 (for different threshold, change it in the get_alleles_4base(..., threshold= <value>)
 #################################################################
 
 alleles_4base_results = []
@@ -300,7 +311,7 @@ data_4base = pd.DataFrame(zip(*alleles_4base_results), index = hmp_trimmed.index
 ###
 
 #################################################################
-# advanced filter with threshold (default = 4) and '?' 
+# ADVANCED FILTER with threshold (default = 4) and '?' 
 # (where threshold of 2nd allele is < 4, if 1st allele < 2* threshold)
 #################################################################
 
@@ -344,22 +355,22 @@ prob_homo_values = pd.Series(get_pooled_loci_no_N(data_prob))
 
 # NOTE: from here on, I wrote the pd.Series to a csv, to work in R (to plot & the reshape package has a nice counting function)
 
+
 #################################################################
-# backtrack the count values based on the input filter (not yet finished, see BGS_import_pandas, line 308f.)
+# backtrack the count values based on the input filter 
 #################################################################
 
 # create one big list:
 
 all_pooled_values = []
-for column in data.columns:
-    for value in data.ix[:, column]:
+for column in data_zero.columns:
+    for value in data_zero.ix[:, column]:
         all_pooled_values.append(value)
 
 zyg_types = pd.Series(get_zygosity_types(all_pooled_values))
 
-
-
-
+zyg_types.to_csv("allele_types2_4base_zero.csv")
+# NOTE: from here on, I wrote the pd.Series to a csv, to work in R (to plot & the reshape package has a nice counting function)
 
 
 #################################################################
@@ -384,7 +395,7 @@ data_numeric = pd.DataFrame(zip(*numeric_alleles), index = hmp_trimmed.ix[2:,:].
 # you still need to tweak the output file, refer to genepop format for further details
 
 #################################################################
-# write the output file:
+# write output file:
 #################################################################
 
 data.to_csv(<output_file_name>.csv)
