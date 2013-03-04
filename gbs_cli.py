@@ -122,12 +122,12 @@ def get_alleles_MAF(base_list, count_list, allele_list, MAF = 0.45):
 	else:
 	    if count_1 > 0 and count_2 > 0:
 		if count_1 > count_2:
-		    if (count_2/ count_1 + count_2) >= MAF:
+		    if count_2/ (count_1 + count_2) >= MAF:
 			value = str(allele_1 + '/' + allele_2)
 		    else: 
 			value = str(allele_1 + '/' + allele_1)
 		elif count_2 > count_1:
-		    if (count_1/ count_1 + count_2) >= MAF:
+		    if count_1/ (count_1 + count_2) >= MAF:
 			value = str(allele_1 + '/' + allele_2)
 		    else:
 			value = str(allele_2 + '/' + allele_2)
