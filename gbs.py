@@ -195,6 +195,39 @@ def get_zygosity_types(pooled_data):
     return allele_types
 
 
+def get_hmp_replica_summ(repl_1, repl_2):
+    '''Gives a summary list for the comparison of 2 replicate samples'''
+    NN, Nn, equal_not_N, not_equal, ambig = (0,0,0,0,0)
+    replica = []
+    N_1 = repl_1 == 'N'
+    N_2 = repl_2 == 'N'
+    compare_repl = repl_1 == repl_2
+    nucleo = dict([['K', ['G','T']], ['M', ['A', 'C']], ['R', ['A', 'G']], ['S', ['G', 'C']], ['W', ['A', 'T']], ['Y', ['T', 'C']]])
+    for i, val_1 in enumerate(N_1):
+	val_2 = N_2[i]
+	if val_1 and val_2:
+	    NN += 1
+	elif val_1 or val_2:
+	    Nn += 1
+	else:
+	    equal = compare_repl[i]
+	    if equal:
+		equal_not_N += 1
+	    else:
+		base_1 = repl_1[i]
+		base_2 = repl_2[i]
+		if nucleo.get(base_2):
+		    if base_1 == nucleo.get(base_2)[0] or nucleo.get(base_2)[1]:
+			ambig += 1
+		elif nucleo.get(base_1):
+		    if base_2 == nucleo.get(base_1)[0] or nucleo.get(base_1)[1]:
+			ambig += 1
+		else:
+		    not_equal += 1
+    replica.append([equal_not_N, not_equal, ambig, equal_not_N+not_equal+ambig, NN, Nn])
+    return replica
+
+
 def import_raw_loci(filename):
     '''Retrieve sequencing data from the text file and store it in a numpy array'''
     return np.genfromtxt(filename, dtype=str, delimiter='\t')

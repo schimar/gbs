@@ -173,8 +173,6 @@ rep_samples = np.unique(np.array(pops))
 #######
 # first, assign pairs of replicates (with re's?)
 # sth like:
-
-
 def get_hmp_replica_ratio(repl_1, repl_2):
     true = 0
     false = 0
@@ -187,7 +185,40 @@ def get_hmp_replica_ratio(repl_1, repl_2):
 	    false += 1
     replica_ratio.append([true/len(repl_1), false/len(repl_1)])
     return replica_ratio
-    
+
+def get_hmp_replica_summ(repl_1, repl_2):
+    NN, Nn, equal_not_N, not_equal, ambig = (0,0,0,0,0)
+    replica = []
+    N_1 = repl_1 == 'N'
+    N_2 = repl_2 == 'N'
+    compare_repl = repl_1 == repl_2
+    nucleo = dict([['K', ['G','T']], ['M', ['A', 'C']], ['R', ['A', 'G']], ['S', ['G', 'C']], ['W', ['A', 'T']], ['Y', ['T', 'C']]])
+    for i, val_1 in enumerate(N_1):
+	val_2 = N_2[i]
+	if val_1 and val_2:
+	    NN += 1
+	elif val_1 or val_2:
+	    Nn += 1
+	else:
+	    equal = compare_repl[i]
+	    if equal:
+		equal_not_N += 1
+	    else:
+		base_1 = repl_1[i]
+		base_2 = repl_2[i]
+		if nucleo.get(base_2):
+		    if base_1 == nucleo.get(base_2)[0] or nucleo.get(base_2)[1]:
+			ambig += 1
+		elif nucleo.get(base_1):
+		    if base_2 == nucleo.get(base_1)[0] or nucleo.get(base_1)[1]:
+			ambig += 1
+		else:
+		    not_equal += 1
+    replica.append([equal_not_N, not_equal, ambig, equal_not_N+not_equal+ambig, NN, Nn])
+    return replica
+
+
+
 ###
 replica_list = []
 for pop in hmp_trimmed.columns:
