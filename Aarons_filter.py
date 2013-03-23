@@ -167,8 +167,7 @@ rep_samples = np.unique(np.array(pops))
 # hmc
 
 # 1) loop over columns and find the pairs of replicates
-# 2) take count_1 and count_2 of both and compare them.
-
+# 2) take count_1 and count_2 of both and add to use later in filters
 
 #######
 # first, assign pairs of replicates (with re's?)
@@ -186,58 +185,6 @@ def get_hmp_replica_ratio(repl_1, repl_2):
     replica_ratio.append([true/len(repl_1), false/len(repl_1)])
     return replica_ratio
 
-def get_hmp_replica_summ(repl_1, repl_2):
-    NN, Nn, equal_not_N, not_equal, ambig = (0,0,0,0,0)
-    replica = []
-    N_1 = repl_1 == 'N'
-    N_2 = repl_2 == 'N'
-    compare_repl = repl_1 == repl_2
-    nucleo = dict([['K', ['G','T']], ['M', ['A', 'C']], ['R', ['A', 'G']], ['S', ['G', 'C']], ['W', ['A', 'T']], ['Y', ['T', 'C']]])
-    for i, val_1 in enumerate(N_1):
-	val_2 = N_2[i]
-	if val_1 and val_2:
-	    NN += 1
-	elif val_1 or val_2:
-	    Nn += 1
-	else:
-	    equal = compare_repl[i]
-	    if equal:
-		equal_not_N += 1
-	    else:
-		base_1 = repl_1[i]
-		base_2 = repl_2[i]
-		if nucleo.get(base_2):
-		    if base_1 == nucleo.get(base_2)[0] or nucleo.get(base_2)[1]:
-			ambig += 1
-		elif nucleo.get(base_1):
-		    if base_2 == nucleo.get(base_1)[0] or nucleo.get(base_1)[1]:
-			ambig += 1
-		else:
-		    not_equal += 1
-    replica.append([equal_not_N, not_equal, ambig, equal_not_N+not_equal+ambig, NN, Nn])
-    return replica
-
-
-
-###
-replica_list = []
-for pop in hmp_trimmed.columns:
-    if re.findall('([A-Z]+[0-9]+[a-z]+[0-9]+)', pop):
-	continue
-    elif re.findall('([A-Z]+[0-9]+[a-z]+)', pop):
-	replica_1 = re.findall('([A-Z]+[0-9]+[a-z]+)', pop)[0]
-	replica_2 = re.findall('([A-Z]+[0-9]+)', pop)[0]
-	replica_list.append(get_hmp_replica_ratio(hmp_trimmed[replica_1], hmp_trimmed[replica_2]))
-
-# now, I omitted the 'replicate2' ...
-
-col_names_replica = []
-for pop in hmp_trimmed.columns:
-    if re.findall('([A-Z]+[0-9]+[a-z]+[0-9]+)', pop):
-	continue
-    elif re.findall('([A-Z]+[0-9]+[a-z]+)', pop):
-	col_names_replica.append(re.findall('([A-Z]+[0-9]+)', pop)[0])
-
 
 # 
 for val in replica_list:
@@ -248,8 +195,32 @@ repl_ratio = pd.DataFrame(zip(*a), index= ['true', 'false'], columns= col_names_
 
 
 repl_ratio.columns = pd.Index(col_names_replica) # unhashable type: list (why's that?)
+###########################
+# add replica counts
+
+def get_replicate_counts(repl_1_count, repl_2_count):
+    new_count_list = []
+    for i, val_1 in enumerate(repl_1_count):
+	val_2 = repl_2_count[i]
+	count_1_repl_1, count_1_repl_2 = map(int, val_1.split('|'))
+	count_2_repl_1, count_2_repl_2 = map(int, val_2.split('|'))
+	new_count_1 = count_1_repl_1 + count_2_repl_1
+	new_count_2 = count_1_repl_2 + count_2_repl_2
+	new_count_list.append(str(new_count_1) + '|' + str(new_count_2))
+    return new_count_list
 
 
+###
+replica_counts = []
+for pop in hmc.columns:
+    if re.findall('([A-Z]+[0-9]+[a-z]+[0-9]+)', pop):
+	continue
+    elif re.findall('([A-Z]+[0-9]+[a-z]+)', pop):
+	replica_1 = re.findall('([A-Z]+[0-9]+[a-z]+)', pop)[0]
+	replica_2 = re.findall('([A-Z]+[0-9]+)', pop)[0]
+	replica_counts.append(get_replicate_counts(hmc[replica_1], hmc[replica_2]))
+
+hmc_replica = pd.DataFrame(zip(*replica_counts), index = hmc.index, columns= col_names_replica)
 
 ####################################
 
