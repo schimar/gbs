@@ -70,6 +70,6 @@ for val in replica_list:
     proper.append(val[0])
 
 
-repl_summ_4base = pd.DataFrame(zip(*proper), index= index, columns= col_names_replica)
+repl_summ_data = pd.DataFrame(zip(*proper), index= index, columns= col_names_replica)
 
-repl_summ_4base.to_csv("4base_replicate_summary.csv")
+repl_summ_data.to_csv("MAF_replicate_summary.csv")
