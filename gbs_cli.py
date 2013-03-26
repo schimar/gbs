@@ -240,7 +240,7 @@ def get_filter_replica_summ(repl_1, repl_2):
 	    Nn += 1
 	else:
 	    rep_1_allele_1, rep_1_allele_2 = repl_1[i].split('/')
-	    rep_2_allele_1, rep_2_allele_2 = repl_1[i].split('/')
+	    rep_2_allele_1, rep_2_allele_2 = repl_2[i].split('/')
 	    equal = compare_repl[i]
 	    if equal:
 		equal_not_N += 1
