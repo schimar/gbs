@@ -34,7 +34,7 @@ for val in replica_list:
 ##
 repl_summ = pd.DataFrame(zip(*a), index= index, columns= col_names_replica)
 ##
-repl_summ.to_csv("hmp_replicate_summary.csv")
+repl_summ.to_csv("adv_replicate_summary.csv")
 
 #################################################################
 # REPLICATE FUNC for filtered data

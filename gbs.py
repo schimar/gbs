@@ -11,6 +11,7 @@ import scipy as sp
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from gbs_cli import *
 
 ###
 def drop_N_columns(data, drop_level = 0.9):
@@ -441,13 +442,14 @@ data_sorted4 = sort_loci_pdDF(data_adv)
 #################################################################
 # transform dataset into genepop format (first step)
 #################################################################
+data = data_sorted_hmp.copy()
 
 numeric_alleles = []
-for col in data_unambiguous.columns:
-    allele_list = data_unambiguous[col]
+for col in data.columns:
+    allele_list = data[col]
     numeric_alleles.append(get_genepop_codes(allele_list))
 
-data_numeric = pd.DataFrame(zip(*numeric_alleles), index = hmp_trimmed.ix[2:,:].index, columns=hmp_trimmed.ix[2:,:].columns, dtype = np.str)
+data_numeric = pd.DataFrame(numeric_alleles, index = data.columns, columns=data.index, dtype = np.str)
 
 # NOTE: from here on, the bases are numerically encoded
 # you still need to tweak the output file, refer to genepop format for further details
@@ -456,7 +458,7 @@ data_numeric = pd.DataFrame(zip(*numeric_alleles), index = hmp_trimmed.ix[2:,:].
 # write output file:
 #################################################################
 
-data.to_csv(<output_file_name>.csv)
+data_numeric.to_csv(<output_file_name>.csv)
 
 
 #################################################################
