@@ -1,10 +1,29 @@
+library(adegenet)
+library(ape)
+library(pegas)
+###
+vignette('ReadingFiles') 
 
-from Bio.PopGen import GenePop
+hmp <- read.loci("hmp_sorted_sub.csv", loci.sep= ',', col.loci = 3:26 , col.pop = 2, row.names= 1)
+###
 
-handle = open("sub3000_sorted4_genepop.gen")
+summary(hmp)
+print(hmp, details= T)
 
-rec = GenePop.read(handle) 
-handle.close()
+heterozygosity(hmp$TP156963, variance= F)
+apply(hmp, 2, heterozygosity)
+
+by(hmp, hmp$population, hw.test)
+### adegenet
+hmpS4 <- as.genind(hmp)
+
+
+
+##############################
+#from Bio.PopGen import GenePop
+#handle = open("sub3000_sorted4_genepop.gen")
+#rec = GenePop.read(handle) 
+#handle.close()
 
 ####################
 # see adegenet-basics.pdf
