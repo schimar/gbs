@@ -4,7 +4,7 @@ library(pegas)
 ###
 vignette('ReadingFiles') 
 
-hmp <- read.loci("hmp_sorted_sub.csv", loci.sep= ',', col.loci = 3:26 , col.pop = 2, row.names= 1)
+hmp <- read.loci("hmp_sorted.csv", loci.sep= ',', col.loci = 3:26 , col.pop = 2, row.names= 1)
 ###
 
 summary(hmp)
