@@ -74,4 +74,43 @@ hw2 <- HWE.test.genind(data,res="full")
 # again, warnings:
 # Chi-squared approximation may be incorrect
 
+#################################
+# using DatABEL and GenABEL
+
+library(GenABEL, DatABEL, genetics)
+
+text2databel("matr.txt", outfile = "matr1", R_matrix = TRUE, type = "UNSIGNED_INT")
+
+#Options in effect:
+#   --infile    = matr.txt
+#   --outfile   = matr1
+#   --skiprows  = 1
+#   --skipcols  = 1
+#   --cnrow     = ON, using line 1 of 'matr.txt'
+#   --rncol     = ON, using column 1 of 'matr.txt'
+#   --transpose = OFF
+#   --Rmatrix   = ON
+#   --nanString = N
+
+#zero <- text2databel("zero_all.csv", outfile= "zero1", R_matrix= T, type= "DOUBLE", transpose= T, naString= "N")
+
+#zero <- read.csv("zero_all.csv", header = T)
+#adv <- read.csv("data_adv_sorted4.csv", header = T)
+as.genotype(adv$FLFL04) # works
+#genadv <- t(adv)
+#zero <- read.csv("zero_all_NA.csv", header=T)
+
+tzero <- read.csv("t_zero_all_NA.csv", header= T)
+t4base <- read.csv("t_4base_all_NA.csv", header = T)
+tadv <- read.csv("t_adv_all_NA.csv", header = T)
+tMAF <- read.csv("t_MAF_all_NA.csv", header = T)
+
+
+tzero$population <- substring(tzero$X, 0, 2)
+flfl <- subset(tzero, tzero$pop == 'FLF')
+HWE.test(as.genotype(flfl$TP156963))
+HWE.exact(as.genotype(flfl$TP156963))
+
+z <- as.loci(tzero)
+Fst(z)
 
