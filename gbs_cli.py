@@ -38,107 +38,124 @@ def filter_single_col(base_list, count_list, threshold = 4):
         output.append(value)
     return output
 
-def get_alleles_zero(base_list, count_list, allele_list):
-    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels'''
+
+def get_alleles_zero(base_list, count_list, allele_list, allele_sep='/', NA= 'N'):
+    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels. Seperator between alleles (default= '/') can be specified with allele_sep= '<seperator>'. Missing values can be specified with NA= '<NA.' '''
     result = []
     value = ''
     for i, base in enumerate(base_list):
 	count_1, count_2 = map(int, count_list[i].split('|'))
 	allele_1, allele_2 = allele_list[i].split('/')
 	if base == 'N':
-	    value = 'N'
+	    value = NA
 	else:
 	    if count_1 > 0 and count_2 == 0:
-		value = str(allele_1 + '/' + allele_1)
+		value = str(allele_1 + allele_sep + allele_1)
 	    elif count_1 == 0 and count_2 > 0:
-		value = str(allele_2 + '/' + allele_2)
+		value = str(allele_2 + allele_sep + allele_2)
 	    elif count_1 > 0 and count_2 > 0:
-		value = str(allele_1 + '/' + allele_2)
+		value = str(allele_1 + allele_sep + allele_2)
 	    else:
-		value = 'N'
+		value = NA
 	result.append(value)
     return result  
 
-def get_alleles_4base(base_list, count_list, allele_list, threshold = 4):
-    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels and the read-depth (default = 4)'''
+def get_alleles_4base(base_list, count_list, allele_list, threshold = 4, allele_sep= '/', NA= 'N'):
+    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels and the read-depth (default = 4). Seperator between alleles (default= '/') can be specified with allele_sep= '<seperator>'. Missing values can be specified with NA= '<NA.' '''
     ambig = []
     value = ''
     for i, base in enumerate(base_list):
         count_1, count_2 = map(int, count_list[i].split('|'))
         allele_1, allele_2 = allele_list[i].split('/')
         if base == 'N':
-            value = 'N'
+            value = NA
         else:
             if count_1 >= threshold and count_2 < threshold:
-                value =  str(allele_1 + '/' + allele_1)
+                value =  str(allele_1 + allele_sep + allele_1)
             elif count_1 < threshold and count_2 >= threshold:
-                value = str(allele_2 + '/' + allele_2)
+                value = str(allele_2 + allele_sep + allele_2)
             elif count_1 >= threshold and count_2 >= threshold:
-                value = str(allele_1 + '/' + allele_2)
+                value = str(allele_1 + allele_sep + allele_2)
 	    else:
-		value = 'N'
+		value = NA
         ambig.append(value)
     return ambig
 
 
-def get_alleles_adv(base_list, count_list, allele_list, threshold = 4):
-    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels. A read-depth threshold (default = 4) is applied. If one allele is over the threshold, but not the second one, it will be checked for having at least double the amount of the threshold, to qualify as heterozygote (if not, it'll be '?'  '''
+def get_alleles_adv(base_list, count_list, allele_list, threshold = 4, allele_sep= '/', NA= 'N'):
+    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels. A read-depth threshold (default = 4) is applied. If one allele is over the threshold, but not the second one, it will be checked for having at least double the amount of the threshold, to qualify as heterozygote (if not, it'll be '?'. Seperator between alleles (default= '/') can be specified with allele_sep= '<seperator>'. Missing values can be specified with NA= '<NA.' '''
     ambig = []
     value = ''
     for i, base in enumerate(base_list):
         count_1, count_2 = map(int, count_list[i].split('|'))
         allele_1, allele_2 = allele_list[i].split('/')
         if base == 'N':
-            value = 'N'
+            value = NA
         else:
             if count_1 >= threshold and count_2 < threshold:
                 if count_1 < 2*threshold:
-		    value = str(allele_1 + '/' + '?')
+		    value = str(allele_1 + allele_sep + '?')
 		else: 
-		    value =  str(allele_1 + '/' + allele_1)
+		    value =  str(allele_1 + allele_sep + allele_1)
 	    elif count_1 < threshold and count_2 >= threshold:
 		if count_2 < 2*threshold:
-		    value = str(allele_2 + '/' + '?')
+		    value = str(allele_2 + allele_sep + '?')
 		else:
-		    value = str(allele_2 + '/' + allele_2)
+		    value = str(allele_2 + allele_sep + allele_2)
             elif count_1 >= threshold and count_2 >= threshold:
-                value = str(allele_1 + '/' + allele_2)
+                value = str(allele_1 + allele_sep + allele_2)
 	    else:
-		value = 'N' 
+		value = NA
 	ambig.append(value)
     return ambig
 
 # here: MAF filter
 
-def get_alleles_MAF(base_list, count_list, allele_list, MAF = 0.45):
-    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels. The MAF will be calculated and, if smaller than the given MAF (default = 0.45), it will be defined as homozygote, otherwise as heterozygous.'''
+def get_alleles_MAF(base_list, count_list, allele_list, MAF = 0.45, allele_sep= '/', NA= 'N'):
+    '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels. The MAF will be calculated and, if smaller than the given MAF (default = 0.45), it will be defined as homozygote, otherwise as heterozygous. Seperator between alleles (default= '/') can be specified with allele_sep= '<seperator>'. Missing values can be specified with NA= '<NA.' '''
     result = []
     value = ''
     for i, base in enumerate(base_list):
         count_1, count_2 = map(int, count_list[i].split('|'))
         allele_1, allele_2 = allele_list[i].split('/')
 	if base == 'N':
-	    value = 'N'
+	    value = NA
 	else:
 	    if count_1 > 0 and count_2 > 0:
 		if count_1 > count_2:
 		    if count_2/ (count_1 + count_2) >= MAF:
-			value = str(allele_1 + '/' + allele_2)
+			value = str(allele_1 + allele_sep + allele_2)
 		    else: 
-			value = str(allele_1 + '/' + allele_1)
+			value = str(allele_1 + allele_sep + allele_1)
 		elif count_2 > count_1:
 		    if count_1/ (count_1 + count_2) >= MAF:
-			value = str(allele_1 + '/' + allele_2)
+			value = str(allele_1 + allele_sep + allele_2)
 		    else:
-			value = str(allele_2 + '/' + allele_2)
+			value = str(allele_2 + allele_sep + allele_2)
 		else: 
-		    value = str(allele_1 + '/' + allele_2)
+		    value = str(allele_1 + allele_sep + allele_2)
 	    elif count_1 > 0 and count_2 == 0:
-		value = str(allele_1 + '/' + allele_1) 
+		value = str(allele_1 + allele_sep + allele_1) 
 	    elif count_2 > 0 and count_1 == 0:
-		value = str(allele_2 + '/' + allele_2)
+		value = str(allele_2 + allele_sep + allele_2)
 	result.append(value)
     return result 
+
+####
+
+def sort_loci_pdDF(data, NA= 'N'):
+    '''Strips the column headers as well as the first column from the input pd.DataFrame and sorts the loci and individuals according to highest abundance of bases'''
+    #data_strip_loci = data.ix[:, 'FLFL04': 'WWA30']
+    data_not_N = data != NA
+    row_sums = -1*(np.sum(data_not_N, axis=1))
+    col_sums = -1*(np.sum(data_not_N, axis=0))
+    row_order = row_sums.argsort()
+    col_order = col_sums.argsort()
+    indivID_sorted = data.index[row_order]
+    #locus_sorted = data.columns[col_order]
+    data_sorted = np.array(data)[row_order]#[:, col_order]
+    data_sorted = pd.DataFrame(data_sorted, index = indivID_sorted, columns= data.columns)
+    return data_sorted
 
 ####
 
@@ -258,19 +275,6 @@ def import_raw_loci(filename):
     return np.genfromtxt(filename, dtype=str, delimiter='\t')
 
 
-def sort_loci_pdDF(data):
-    '''Strips the column headers as well as the first column from the input pd.DataFrame and sorts the loci and individuals according to highest abundance of bases'''
-    #data_strip_loci = data.ix[:, 'FLFL04': 'WWA30']
-    data_not_N = data != 'N'
-    row_sums = -1*(np.sum(data_not_N, axis=1))
-    col_sums = -1*(np.sum(data_not_N, axis=0))
-    row_order = row_sums.argsort()
-    col_order = col_sums.argsort()
-    indivID_sorted = data.index[row_order]
-    #locus_sorted = data.columns[col_order]
-    data_sorted = np.array(data)[row_order]#[:, col_order]
-    data_sorted = pd.DataFrame(data_sorted, index = indivID_sorted, columns= data.columns)
-    return data_sorted
 
 
 def get_single_counts(count_list):
