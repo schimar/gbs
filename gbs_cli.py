@@ -17,11 +17,12 @@ def drop_N_columns(data, drop_level = 0.9):
     '''Returns a pd.DataFrame, where all columns, which consist of more than 90 per cent (default) 'N's are being dropped'''
     data_dropped = data.copy()
     for i, col in enumerate(data_dropped.columns):
-        base_series = data_dropped[col]
-        N_to_length = np.sum(base_series == 'N')/len(base_series)
-        if N_to_length > drop_level:
-            data_dropped = data_dropped.drop(col, axis=1)
+	base_series = data_dropped[col]
+        N_ratio = sum(base_series == 'N')/len(base_series)
+	if N_ratio > drop_level:
+	    del data_dropped[col]
     return data_dropped
+
 
 def filter_single_col(base_list, count_list, threshold = 4):
     '''Returns a list of nucleotides filtered (threshold, default = 4) by number of occurence of a sequencing run at specific loci in a list of bases'''
@@ -322,6 +323,19 @@ def get_genepop_codes(allele_list):
 	else:
 	    allele_1, allele_2 = alleles.split('/')
 	    value = nucleo.get(allele_1) + nucleo.get(allele_2)
+	output.append(value)
+    return output
+
+def get_structure_format(allele_list, allele_sep= ' ', NA= 'N'):
+    '''Transforms the alleles (in the form of e.g. 'A/A') into numeric type (where 01 = A, 02 = C, 03 = G, 04 = T)'''
+    output = []
+    nucleo = dict([['A', '1'], ['C', '2'], ['G', '3'], ['T', '4'], ['?', '-9']])
+    for alleles in allele_list:
+	if alleles == NA:
+	    value = NA
+	else:
+	    allele_1, allele_2 = alleles.split(allele_sep)
+	    value = nucleo.get(allele_1) + allele_sep + nucleo.get(allele_2)
 	output.append(value)
     return output
 

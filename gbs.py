@@ -18,11 +18,12 @@ def drop_N_columns(data, drop_level = 0.9):
     '''Returns a pd.DataFrame, where all columns, which consist of more than 90 per cent (default) 'N's are being dropped'''
     data_dropped = data.copy()
     for i, col in enumerate(data_dropped.columns):
-        base_series = data_dropped[col]
-        N_to_length = np.sum(base_series == 'N')/len(base_series)
-        if N_to_length > drop_level:
-            data_dropped = data_dropped.drop(col, axis=1)
+	base_series = data_dropped[col]
+        N_ratio = sum(base_series == 'N')/len(base_series)
+	if N_ratio > drop_level:
+	    del data_dropped[col]
     return data_dropped
+
 
 def filter_single_col(base_list, count_list, threshold = 4):
     '''Returns a list of nucleotides filtered (threshold, default = 4) by number of occurence of a sequencing run at specific loci in a list of bases'''
@@ -275,10 +276,10 @@ def import_raw_loci(filename):
     return np.genfromtxt(filename, dtype=str, delimiter='\t')
 
 
-def sort_loci_pdDF(data):
+def sort_loci_pdDF(data, NA= 'N'):
     '''Strips the column headers as well as the first column from the input pd.DataFrame and sorts the loci and individuals according to highest abundance of bases'''
     #data_strip_loci = data.ix[:, 'FLFL04': 'WWA30']
-    data_not_N = data != 'N'
+    data_not_N = data != NA
     row_sums = -1*(np.sum(data_not_N, axis=1))
     col_sums = -1*(np.sum(data_not_N, axis=0))
     row_order = row_sums.argsort()
@@ -337,6 +338,19 @@ def get_genepop_codes(allele_list):
 	output.append(value)
     return output
     
+def get_structure_format(allele_list, allele_sep= ' ' NA= 'N'):
+    '''Transforms the alleles (in the form of e.g. 'A/A') into numeric type (where 01 = A, 02 = C, 03 = G, 04 = T)'''
+    output = []
+    nucleo = dict([['A', '1'], ['C', '2'], ['G', '3'], ['T', '4'], ['?', '-9']])
+    for alleles in allele_list:
+	if alleles == NA:
+	    value = '-9'
+	else:
+	    allele_1, allele_2 = alleles.split(allele_sep)
+	    value = nucleo.get(allele_1) + allele_sep + nucleo.get(allele_2)
+	output.append(value)
+    return output
+
 
 #    if sys.argv > 1:
 #        hmp = pd.read_table(sys.argv[2], index_col = 0, header = 0)
@@ -351,7 +365,7 @@ hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
 #################################################################
 #################################################################
 # drop all the columns with more than 90 (default) per cent 'N's (not yet needed)
-# hmp_trimmed = drop_N_columns(hmp_trimmed)
+hmp_trimmed = drop_N_columns(hmp_trimmed)
 
 
 #################################################################
@@ -369,7 +383,7 @@ alleles_zero_results = []
 for i, col in enumerate(hmp_trimmed.columns):
     base_list = hmp_trimmed[col]
     count_list = hmc[hmc.columns[i]]
-    alleles_zero_results.append(get_alleles_zero(base_list, count_list, hmp.alleles))
+    alleles_zero_results.append(get_alleles_zero(base_list, count_list, hmp.alleles, allele_sep= ' ', NA= '-9'))
 
 data_zero = pd.DataFrame(zip(*alleles_zero_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
@@ -475,16 +489,40 @@ tdata.to_csv("4base_MAF_sorted.csv")
 #################################################################
 data = data_sorted_hmp.copy()
 
-numeric_alleles = []
+structure_alleles = []
 for col in data.columns:
     allele_list = data[col]
-    numeric_alleles.append(get_genepop_codes(allele_list))
+    structure_alleles.append(get_genepop_codes(allele_list))
 
-data_numeric = pd.DataFrame(numeric_alleles, index = data.columns, columns=data.index, dtype = np.str)
+data_numeric = pd.DataFrame(structure_alleles, index = data.columns, columns=data.index, dtype = np.str)
 
 # NOTE: from here on, the bases are numerically encoded
 # you still need to tweak the output file, refer to genepop format for further details
 
+#################################################################
+# change to structure format
+#################################################################
+data = data_sorted_zero.copy()
+
+structure_alleles = []
+for col in data.columns:
+    allele_list = data[col]
+    structure_alleles.append(get_structure_format(allele_list, allele_sep= ' ', NA='-9'))
+
+header = []
+for i, sample in enumerate(data.columns):
+    population = re.findall('([A-Z]+)', sample)
+    header.append(population)
+
+#transposed_structure = zip(*structure_alleles)
+#transposed_structure.insert(0, header)
+
+
+# prepare column and index for pd.DataFrame
+
+data_structure = pd.DataFrame(structure_alleles, index = data.columns, columns=data.index, dtype = np.str)
+
+data_structure.insert(0, 'population', header)
 #################################################################
 # write output file:
 #################################################################
