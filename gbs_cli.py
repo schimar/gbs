@@ -18,7 +18,7 @@ def drop_N_columns(data, drop_level = 0.9):
     data_dropped = data.copy()
     for i, col in enumerate(data_dropped.columns):
 	base_series = data_dropped[col]
-        N_ratio = sum(base_series == 'N')/len(base_series)
+        N_ratio = np.sum(base_series == 'N')/len(base_series)
 	if N_ratio > drop_level:
 	    del data_dropped[col]
     return data_dropped

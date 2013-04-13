@@ -19,7 +19,7 @@ def drop_N_columns(data, drop_level = 0.9):
     data_dropped = data.copy()
     for i, col in enumerate(data_dropped.columns):
 	base_series = data_dropped[col]
-        N_ratio = sum(base_series == 'N')/len(base_series)
+        N_ratio = np.sum(base_series == 'N')/len(base_series)
 	if N_ratio > drop_level:
 	    del data_dropped[col]
     return data_dropped
@@ -383,12 +383,12 @@ alleles_zero_results = []
 for i, col in enumerate(hmp_trimmed.columns):
     base_list = hmp_trimmed[col]
     count_list = hmc[hmc.columns[i]]
-    alleles_zero_results.append(get_alleles_zero(base_list, count_list, hmp.alleles, allele_sep= ' ', NA= '-9'))
+    alleles_zero_results.append(get_alleles_zero(base_list, count_list, hmp.alleles))
 
 data_zero = pd.DataFrame(zip(*alleles_zero_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
 #################################################################
-# SIMPLE FILTER with threshold 4 (for different threshold, change it in the get_alleles_4base(..., threshold= <value>)
+# SIMPLE FILTER with threshold 4 (for different threshold, change it in the get_alleles_4base(..., threshold= <value> (same goes for allele_sep and )
 #################################################################
 
 alleles_4base_results = []
