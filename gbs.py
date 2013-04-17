@@ -14,7 +14,7 @@ import pandas as pd
 from gbs_cli import *
 
 ###
-def drop_N_columns(data, drop_level = 0.9):
+def drop_N_individuals(data, drop_level = 0.9):
     '''Returns a pd.DataFrame, where all columns, which consist of more than 90 per cent (default) 'N's are being dropped'''
     data_dropped = data.copy()
     for i, col in enumerate(data_dropped.columns):
@@ -24,6 +24,16 @@ def drop_N_columns(data, drop_level = 0.9):
 	    del data_dropped[col]
     return data_dropped
 
+def drop_N_loci(data, drop_level = 0.9):
+    '''Returns a pd.DataFrame, where all rows (i.e. loci), which consist of more than 90 per cent (default) 'N's are being dropped'''
+    drop_list = []
+    for i, locus in enumerate(data.index):
+	base_series = data.xs(locus)
+	N_ratio = np.sum(base_series == 'N')/len(base_series)
+	if N_ratio > drop_level:
+	    drop_list.append(locus)
+    df = data.drop(drop_list)
+    return df
 
 def filter_single_col(base_list, count_list, threshold = 4):
     '''Returns a list of nucleotides filtered (threshold, default = 4) by number of occurence of a sequencing run at specific loci in a list of bases'''
@@ -365,7 +375,7 @@ hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
 #################################################################
 #################################################################
 # drop all the columns with more than 90 (default) per cent 'N's (not yet needed)
-hmp_trimmed = drop_N_columns(hmp_trimmed)
+hmp_trimmed = drop_N_individuals(hmp_trimmed)
 
 
 #################################################################
