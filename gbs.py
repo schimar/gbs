@@ -389,6 +389,8 @@ hmp_trimmed = drop_N_individuals(hmp_trimmed)
 
 hmp_trim_drop1, hmc_drop1, drop_list = drop_N_loci(hmp_trimmed, hmc)
 
+alleles = hmp.alleles.drop(drop_list)
+
 hmp_trim_drop2 = drop_N_individuals(hmp_trim_drop1)
 ##### FILTER 
 
@@ -421,38 +423,44 @@ alleles_4base_results = []
 for i, col in enumerate(data_hmp.columns):
     base_list = data_hmp[col]
     count_list = data_hmc[data_hmc.columns[i]]
-    alleles_4base_results.append(get_alleles_4base(base_list, count_list, data_hmp.alleles))
+    alleles_4base_results.append(get_alleles_4base(base_list, count_list, alleles))
 
 data_4base = pd.DataFrame(zip(*alleles_4base_results), index = data_hmp.index, columns=data_hmp.columns, dtype = np.str)
 
-data_4base_drop = drop_N_loci(data_4base)
+data_4base_drop, hmc_drop2, drop_list_4base = drop_N_loci(data_4base, hmc_drop1)
 ###
 
 #################################################################
 # ADVANCED FILTER with threshold (default = 4) and '?' 
 # (where threshold of 2nd allele is < 4, if 1st allele < 2* threshold)
 #################################################################
+data_hmp = hmp_trim_drop2.copy()
+data_hmc = hmc_drop1.copy()
 
 adv_fil_results = []
-for i, col in enumerate(hmp_trimmed.columns):
-    base_list = hmp_trimmed[col]
-    count_list = hmc[hmc.columns[i]]
-    adv_fil_results.append(get_alleles_adv(base_list, count_list, hmp.alleles))
+for i, col in enumerate(data_hmp.columns):
+    base_list = data_hmp[col]
+    count_list = data_hmc[data_hmc.columns[i]]
+    adv_fil_results.append(get_alleles_adv(base_list, count_list, alleles))
 
-data_adv = pd.DataFrame(zip(*adv_fil_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+data_adv = pd.DataFrame(zip(*adv_fil_results), index = data_hmp.index, columns= data_hmp.columns, dtype = np.str)
 
-data_adv_drop = drop_N_loci(data_adv)
+data_adv_drop, hmc_drop_adv, drop_list_adv = drop_N_loci(data_adv, hmc_drop1)
 #################################################################
 # MAF filter 
 #################################################################
+data_hmp = hmp_trim_drop2.copy()
+data_hmc = hmc_drop1.copy()
 
 MAF_results = []
-for i, col in enumerate(hmp_trimmed.columns):
-    base_list = hmp_trimmed[col]
-    count_list = hmc[hmc.columns[i]]
-    MAF_results.append(get_alleles_MAF(base_list, count_list, hmp.alleles))
+for i, col in enumerate(data_hmp.columns):
+    base_list = data_hmp[col]
+    count_list = data_hmc[data_hmc.columns[i]]
+    MAF_results.append(get_alleles_MAF(base_list, count_list, alleles))
 
-data_MAF = pd.DataFrame(zip(*MAF_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+data_MAF = pd.DataFrame(zip(*MAF_results), index = data_hmp.index, columns= data_hmp.columns, dtype = np.str)
+
+data_MAF_drop, hmc_drop_MAF, drop_list_MAF = drop_N_loci(data_MAF, hmc_drop1)
 
 # Note: for combining 4base and MAF, change 'hmp_trimmed' to 'data_4base' (you need to do the 4base-filter first) 
 #################################################################
