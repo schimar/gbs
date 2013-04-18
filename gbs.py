@@ -24,16 +24,17 @@ def drop_N_individuals(data, drop_level = 0.9):
 	    del data_dropped[col]
     return data_dropped
 
-def drop_N_loci(data, drop_level = 0.9):
+def drop_N_loci(hmp, hmc, drop_level = 0.9):
     '''Returns a pd.DataFrame, where all rows (i.e. loci), which consist of more than 90 per cent (default) 'N's are being dropped'''
     drop_list = []
-    for i, locus in enumerate(data.index):
-	base_series = data.xs(locus)
+    for i, locus in enumerate(hmp.index):
+	base_series = hmp.xs(locus)
 	N_ratio = np.sum(base_series == 'N')/len(base_series)
 	if N_ratio > drop_level:
 	    drop_list.append(locus)
-    df = data.drop(drop_list)
-    return df
+    df_hmp = hmp.drop(drop_list)
+    df_hmc = hmc.drop(drop_list)
+    return df_hmp, df_hmc
 
 def filter_single_col(base_list, count_list, threshold = 4):
     '''Returns a list of nucleotides filtered (threshold, default = 4) by number of occurence of a sequencing run at specific loci in a list of bases'''
@@ -379,6 +380,14 @@ hmp_trimmed = drop_N_individuals(hmp_trimmed)
 
 
 #################################################################
+
+
+# 1) drop_N_loci (on hmp_trimmed)
+# 2) drop_N_individuals (on 1)
+# 3) filter (4base, adv, or MAF) 
+# 4) drop_N_loci 
+
+
 ##### FILTER 
 
 # there are 4 versions 
@@ -397,6 +406,7 @@ for i, col in enumerate(hmp_trimmed.columns):
 
 data_zero = pd.DataFrame(zip(*alleles_zero_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
+data_zero_drop = drop_N_loci(data_zero)
 #################################################################
 # SIMPLE FILTER with threshold 4 (for different threshold, change it in the get_alleles_4base(..., threshold= <value> (same goes for allele_sep and )
 #################################################################
@@ -408,6 +418,8 @@ for i, col in enumerate(hmp_trimmed.columns):
     alleles_4base_results.append(get_alleles_4base(base_list, count_list, hmp.alleles))
 
 data_4base = pd.DataFrame(zip(*alleles_4base_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+
+data_4base_drop = drop_N_loci(data_4base)
 ###
 
 #################################################################
@@ -423,6 +435,7 @@ for i, col in enumerate(hmp_trimmed.columns):
 
 data_adv = pd.DataFrame(zip(*adv_fil_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
 
+data_adv_drop = drop_N_loci(data_adv)
 #################################################################
 # MAF filter 
 #################################################################
