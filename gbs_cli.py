@@ -24,7 +24,7 @@ def drop_N_individuals(data, drop_level = 0.9):
     return data_dropped
 
 def drop_N_loci(hmp, hmc, drop_level = 0.9):
-    '''Returns a pd.DataFrame, where all rows (i.e. loci), which consist of more than 90 per cent (default) 'N's are being dropped'''
+    '''Returns a pd.DataFrame, where all rows (i.e. loci), which consist of more than 90 per cent (default) 'N's are being dropped. hmp and hmc have to be specified, in order to keep the same dimensions. Additionally, a drop_list is being returned with the rows to be discarded.'''
     drop_list = []
     for i, locus in enumerate(hmp.index):
 	base_series = hmp.xs(locus)
@@ -33,7 +33,7 @@ def drop_N_loci(hmp, hmc, drop_level = 0.9):
 	    drop_list.append(locus)
     df_hmp = hmp.drop(drop_list)
     df_hmc = hmc.drop(drop_list)
-    return df_hmp, df_hmc
+    return df_hmp, df_hmc, drop_list
 
 def filter_single_col(base_list, count_list, threshold = 4):
     '''Returns a list of nucleotides filtered (threshold, default = 4) by number of occurence of a sequencing run at specific loci in a list of bases'''

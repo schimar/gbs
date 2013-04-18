@@ -25,7 +25,7 @@ def drop_N_individuals(data, drop_level = 0.9):
     return data_dropped
 
 def drop_N_loci(hmp, hmc, drop_level = 0.9):
-    '''Returns a pd.DataFrame, where all rows (i.e. loci), which consist of more than 90 per cent (default) 'N's are being dropped'''
+    '''Returns a pd.DataFrame, where all rows (i.e. loci), which consist of more than 90 per cent (default) 'N's are being dropped. hmp and hmc have to be specified, in order to keep the same dimensions. Additionally, a drop_list is being returned with the rows to be discarded.'''
     drop_list = []
     for i, locus in enumerate(hmp.index):
 	base_series = hmp.xs(locus)
@@ -34,7 +34,7 @@ def drop_N_loci(hmp, hmc, drop_level = 0.9):
 	    drop_list.append(locus)
     df_hmp = hmp.drop(drop_list)
     df_hmc = hmc.drop(drop_list)
-    return df_hmp, df_hmc
+    return df_hmp, df_hmc, drop_list
 
 def filter_single_col(base_list, count_list, threshold = 4):
     '''Returns a list of nucleotides filtered (threshold, default = 4) by number of occurence of a sequencing run at specific loci in a list of bases'''
@@ -387,7 +387,9 @@ hmp_trimmed = drop_N_individuals(hmp_trimmed)
 # 3) filter (4base, adv, or MAF) 
 # 4) drop_N_loci 
 
+hmp_trim_drop1, hmc_drop1, drop_list = drop_N_loci(hmp_trimmed, hmc)
 
+hmp_trim_drop2 = drop_N_individuals(hmp_trim_drop1)
 ##### FILTER 
 
 # there are 4 versions 
@@ -397,27 +399,31 @@ hmp_trimmed = drop_N_individuals(hmp_trimmed)
 #################################################################
 # SIMPLE FILTER for the initial dataset (without a threshold !!)
 #################################################################
+data_hmp = hmp_trim_drop2.copy()
+data_hmc = hmc_drop1.copy()
 
 alleles_zero_results = []
-for i, col in enumerate(hmp_trimmed.columns):
-    base_list = hmp_trimmed[col]
-    count_list = hmc[hmc.columns[i]]
+for i, col in enumerate(data_hmp.columns):
+    base_list = data_hmp[col]
+    count_list = data_hmc[data_hmc.columns[i]]
     alleles_zero_results.append(get_alleles_zero(base_list, count_list, hmp.alleles))
 
-data_zero = pd.DataFrame(zip(*alleles_zero_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+data_zero = pd.DataFrame(zip(*alleles_zero_results), index = data_hmp.index, columns=data_hmp.columns, dtype = np.str)
 
 data_zero_drop = drop_N_loci(data_zero)
 #################################################################
 # SIMPLE FILTER with threshold 4 (for different threshold, change it in the get_alleles_4base(..., threshold= <value> (same goes for allele_sep and )
 #################################################################
+data_hmp = hmp_trim_drop2.copy()
+data_hmc = hmc_drop1.copy()
 
 alleles_4base_results = []
-for i, col in enumerate(hmp_trimmed.columns):
-    base_list = hmp_trimmed[col]
-    count_list = hmc[hmc.columns[i]]
-    alleles_4base_results.append(get_alleles_4base(base_list, count_list, hmp.alleles))
+for i, col in enumerate(data_hmp.columns):
+    base_list = data_hmp[col]
+    count_list = data_hmc[data_hmc.columns[i]]
+    alleles_4base_results.append(get_alleles_4base(base_list, count_list, data_hmp.alleles))
 
-data_4base = pd.DataFrame(zip(*alleles_4base_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
+data_4base = pd.DataFrame(zip(*alleles_4base_results), index = data_hmp.index, columns=data_hmp.columns, dtype = np.str)
 
 data_4base_drop = drop_N_loci(data_4base)
 ###
