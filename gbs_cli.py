@@ -11,6 +11,7 @@ import scipy as sp
 import matplotlib.pyplot as plt
 import pandas as pd
 
+import Hardy_Weinberg_Equilibrium_exact_test_user_Kantale as hwe
 
 ###
 def drop_N_individuals(data, drop_level = 0.9):
@@ -58,7 +59,7 @@ def get_alleles_zero(base_list, count_list, allele_list, allele_sep='/', NA= 'N'
     for i, base in enumerate(base_list):
 	count_1, count_2 = map(int, count_list[i].split('|'))
 	allele_1, allele_2 = allele_list[i].split('/')
-	if base == 'N':
+	if base == NA:
 	    value = NA
 	else:
 	    if count_1 > 0 and count_2 == 0:
@@ -79,7 +80,7 @@ def get_alleles_4base(base_list, count_list, allele_list, threshold = 4, allele_
     for i, base in enumerate(base_list):
         count_1, count_2 = map(int, count_list[i].split('|'))
         allele_1, allele_2 = allele_list[i].split('/')
-        if base == 'N':
+        if base == NA:
             value = NA
         else:
             if count_1 >= threshold and count_2 < threshold:
@@ -101,7 +102,7 @@ def get_alleles_adv(base_list, count_list, allele_list, threshold = 4, allele_se
     for i, base in enumerate(base_list):
         count_1, count_2 = map(int, count_list[i].split('|'))
         allele_1, allele_2 = allele_list[i].split('/')
-        if base == 'N':
+        if base == NA:
             value = NA
         else:
             if count_1 >= threshold and count_2 < threshold:
@@ -130,7 +131,7 @@ def get_alleles_MAF(base_list, count_list, allele_list, MAF = 0.45, allele_sep= 
     for i, base in enumerate(base_list):
         count_1, count_2 = map(int, count_list[i].split('|'))
         allele_1, allele_2 = allele_list[i].split('/')
-	if base == 'N':
+	if base == NA:
 	    value = NA
 	else:
 	    if count_1 > 0 and count_2 > 0:
@@ -152,6 +153,7 @@ def get_alleles_MAF(base_list, count_list, allele_list, MAF = 0.45, allele_sep= 
 		value = str(allele_2 + allele_sep + allele_2)
 	result.append(value)
     return result 
+
 
 ####
 

@@ -12,8 +12,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from gbs_cli import *
+import Hardy_Weinberg_Equilibrium_exact_test_user_Kantale as hwe
 
 ###
+
 def drop_N_individuals(data, drop_level = 0.9):
     '''Returns a pd.DataFrame, where all columns, which consist of more than 90 per cent (default) 'N's are being dropped'''
     data_dropped = data.copy()
@@ -58,7 +60,7 @@ def get_alleles_zero(base_list, count_list, allele_list, allele_sep='/', NA= 'N'
     for i, base in enumerate(base_list):
 	count_1, count_2 = map(int, count_list[i].split('|'))
 	allele_1, allele_2 = allele_list[i].split('/')
-	if base == 'N':
+	if base == NA:
 	    value = NA
 	else:
 	    if count_1 > 0 and count_2 == 0:
@@ -79,7 +81,7 @@ def get_alleles_4base(base_list, count_list, allele_list, threshold = 4, allele_
     for i, base in enumerate(base_list):
         count_1, count_2 = map(int, count_list[i].split('|'))
         allele_1, allele_2 = allele_list[i].split('/')
-        if base == 'N':
+        if base == NA:
             value = NA
         else:
             if count_1 >= threshold and count_2 < threshold:
@@ -101,7 +103,7 @@ def get_alleles_adv(base_list, count_list, allele_list, threshold = 4, allele_se
     for i, base in enumerate(base_list):
         count_1, count_2 = map(int, count_list[i].split('|'))
         allele_1, allele_2 = allele_list[i].split('/')
-        if base == 'N':
+        if base == NA:
             value = NA
         else:
             if count_1 >= threshold and count_2 < threshold:
@@ -130,7 +132,7 @@ def get_alleles_MAF(base_list, count_list, allele_list, MAF = 0.45, allele_sep= 
     for i, base in enumerate(base_list):
         count_1, count_2 = map(int, count_list[i].split('|'))
         allele_1, allele_2 = allele_list[i].split('/')
-	if base == 'N':
+	if base == NA:
 	    value = NA
 	else:
 	    if count_1 > 0 and count_2 > 0:
@@ -375,12 +377,8 @@ hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
 
 #################################################################
 #################################################################
-# drop all the columns with more than 90 (default) per cent 'N's (not yet needed)
-hmp_trimmed = drop_N_individuals(hmp_trimmed)
-
-
-#################################################################
-
+# drop all the loci (rows) with more than 90 (default) per cent 'N's 
+# then columns and now filter:
 
 # 1) drop_N_loci (on hmp_trimmed)
 # 2) drop_N_individuals (on 1)
@@ -392,6 +390,8 @@ hmp_trim_drop1, hmc_drop1, drop_list = drop_N_loci(hmp_trimmed, hmc)
 alleles = hmp.alleles.drop(drop_list)
 
 hmp_trim_drop2 = drop_N_individuals(hmp_trim_drop1)
+
+#################################################################
 ##### FILTER 
 
 # there are 4 versions 
@@ -412,7 +412,7 @@ for i, col in enumerate(data_hmp.columns):
 
 data_zero = pd.DataFrame(zip(*alleles_zero_results), index = data_hmp.index, columns=data_hmp.columns, dtype = np.str)
 
-data_zero_drop = drop_N_loci(data_zero)
+data_zero_drop, hmc_zero_drop = drop_N_loci(data_zero)
 #################################################################
 # SIMPLE FILTER with threshold 4 (for different threshold, change it in the get_alleles_4base(..., threshold= <value> (same goes for allele_sep and )
 #################################################################
@@ -427,7 +427,7 @@ for i, col in enumerate(data_hmp.columns):
 
 data_4base = pd.DataFrame(zip(*alleles_4base_results), index = data_hmp.index, columns=data_hmp.columns, dtype = np.str)
 
-data_4base_drop, hmc_drop2, drop_list_4base = drop_N_loci(data_4base, hmc_drop1)
+data_4base_drop, hmc_4base_drop2, drop_list_4base = drop_N_loci(data_4base, hmc_drop1)
 ###
 
 #################################################################
@@ -504,7 +504,6 @@ zyg_types.to_csv("allele_types2_4base_zero.csv")
 # and prepare it for pegas (R)
 #################################################################
 data_sorted = sort_loci_pdDF(data_4base)
-
 
 
 # to get the population names:
