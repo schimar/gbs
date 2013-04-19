@@ -170,6 +170,25 @@ def sort_loci_pdDF(data, NA= 'N'):
     data_sorted = np.array(data)[row_order]#[:, col_order]
     data_sorted = pd.DataFrame(data_sorted, index = indivID_sorted, columns= data.columns)
     return data_sorted
+
+####
+def get_hwe_exact(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
+    obs_het= 0
+    obs_hom1= 0
+    obs_hom2= 0
+    for val in locus_pop_subset:
+	pot_allele_1, pot_allele_2 = pot_alleles.split(allele_sep)
+	if val == NA:
+	    continue
+	else:
+	    pop_allele_1, pop_allele_2 = val.split(allele_sep)
+	    if pop_allele_1 != pop_allele_2:
+		obs_het += 1
+	    elif pop_allele_1 == pot_allele_1:
+		obs_hom1 += 1
+	    else:
+		obs_hom2 += 1
+    return hwe.Hardy_Weinberg_Equilibrium_exact_test_user_Kantale(obs_het, obs_hom1, obs_hom2)
 ####
 
 def get_homo_prob(base_list, count_list, allele_list):

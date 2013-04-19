@@ -78,6 +78,7 @@ df.to_csv("data_sorted4.csv")
 
 ####################################################################
 
+
 # test of MAF (minor allele frequency) approach:
 
 a = hmp_trimmed.ix[2,:]
@@ -428,6 +429,91 @@ outfile.close()
 
 arr = pd.DataFrame(new, index = header, columns = data.index)
 
+################################################
+# structure format
 
+def get_structure_format(allele_list, allele_sep= ' ', NA= 'N'):
+    '''Transforms the alleles (in the form of e.g. 'A/A') into numeric type (where 01 = A, 02 = C, 03 = G, 04 = T)'''
+    output = []
+    nucleo = dict([['A', '1'], ['C', '2'], ['G', '3'], ['T', '4'], ['?', '-9']])
+    for alleles in allele_list:
+	if alleles == NA:
+	    value = NA
+	else:
+	    allele_1, allele_2 = alleles.split(allele_sep)
+	    value = nucleo.get(allele_1) + allele_sep + nucleo.get(allele_2)
+	output.append(value)
+    return output
+
+
+    header = []
+    for i, sample in enumerate(data_zero.columns):
+	population = re.findall('([A-Z]+)', sample)
+	header.append(population)
+    output.insert(0, header)
+
+################################################
+# HWE exact test (Wigginton et al.(2005))
+
+# we need AA, BB, AB
+data = data_4base_drop.copy()
+
+
+# how to get subsets for pops?     (probably sth with re's)
+for i, column in enumerate(data.columns):
+    
+    
+
+alleles_4base = hmp.alleles.drop(drop_list_4base)
+###
+flfl = data[list(data.columns[0:20])]
+
+a = flfl.ix[0,:]
+
+#
+obs_het= 0
+obs_hom1= 0
+obs_hom2= 0
+for val in a:
+    pot_allele_1, pot_allele_2 = alleles_4base[0].split('/')
+    if val == 'N':
+        continue
+    else:
+	pop_allele_1, pop_allele_2 = val.split('/')
+	if pop_allele_1 != pop_allele_2:
+	    obs_het += 1
+	elif pop_allele_1 == pot_allele_1:
+	    obs_hom1 += 1
+	else:
+	    obs_hom2 += 1
+print hwe.Hardy_Weinberg_Equilibrium_exact_test_user_Kantale(obs_het, obs_hom1, obs_hom2)
 
 ###
+# loop over rows and do the following:
+
+def get_hwe_exact(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
+    obs_het= 0
+    obs_hom1= 0
+    obs_hom2= 0
+    for val in locus_pop_subset:
+	pot_allele_1, pot_allele_2 = pot_alleles.split(allele_sep)
+	if val == NA:
+	    continue
+	else:
+	    pop_allele_1, pop_allele_2 = val.split(allele_sep)
+	    if pop_allele_1 != pop_allele_2:
+		obs_het += 1
+	    elif pop_allele_1 == pot_allele_1:
+		obs_hom1 += 1
+	    else:
+		obs_hom2 += 1
+    return hwe.Hardy_Weinberg_Equilibrium_exact_test_user_Kantale(obs_het, obs_hom1, obs_hom2)
+
+###
+hwe_list = []
+for i, locus in enumerate(flfl.index):
+    hwe_list.append(get_hwe_exact(locus, alleles_4base[i]))
+
+
+
+
