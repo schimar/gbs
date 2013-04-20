@@ -11,7 +11,7 @@ import scipy as sp
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from gbs_cli import *
+from gbs_mod import *
 import Hardy_Weinberg_Equilibrium_exact_test_user_Kantale as hwe
 
 ###
@@ -172,23 +172,29 @@ def sort_loci_pdDF(data, NA= 'N'):
     return data_sorted
 
 ####
-def get_hwe_exact(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
+def get_hwe(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
+    '''Returns a pd.Series of exact Hardy-Weinberg-tests for a given set of SNPs for one population (calling the function  of Wigginton et al. 2005). A pd.Series of given alleles, found at each locus has to specified (pot_alleles). If a locus has only Ns, 'NA' will be returned.'''
     obs_het= 0
     obs_hom1= 0
     obs_hom2= 0
-    for val in locus_pop_subset:
-	pot_allele_1, pot_allele_2 = pot_alleles.split(allele_sep)
-	if val == NA:
-	    continue
-	else:
-	    pop_allele_1, pop_allele_2 = val.split(allele_sep)
-	    if pop_allele_1 != pop_allele_2:
-		obs_het += 1
-	    elif pop_allele_1 == pot_allele_1:
-		obs_hom1 += 1
+    is_N = locus_pop_subset == NA
+    if is_N.all():
+	return 'NA'
+    else:
+	for val in locus_pop_subset:
+	    pot_allele_1, pot_allele_2 = pot_alleles.split(allele_sep)
+	    if val == NA:
+		continue
 	    else:
-		obs_hom2 += 1
-    return hwe.Hardy_Weinberg_Equilibrium_exact_test_user_Kantale(obs_het, obs_hom1, obs_hom2)
+		pop_allele_1, pop_allele_2 = val.split(allele_sep)
+		if pop_allele_1 != pop_allele_2:
+		    obs_het += 1
+		elif pop_allele_1 == pot_allele_1:
+		    obs_hom1 += 1
+		else:
+		    obs_hom2 += 1
+	return hwe.Hardy_Weinberg_Equilibrium_exact_test_user_Kantale(obs_het, obs_hom1, obs_hom2)
+
 ####
 
 def get_homo_prob(base_list, count_list, allele_list):
@@ -384,7 +390,7 @@ def get_structure_format(allele_list, allele_sep= ' ' NA= 'N'):
     return output
 
 
-#    if sys.argv > 1:
+#    if len(sys.argv) > 1:
 #        hmp = pd.read_table(sys.argv[2], index_col = 0, header = 0)
 #        hmc = pd.read_table(sys.argv[3], index_col = 0, header = 0)
 #    else:

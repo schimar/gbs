@@ -172,23 +172,28 @@ def sort_loci_pdDF(data, NA= 'N'):
     return data_sorted
 
 ####
-def get_hwe_exact(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
+def get_hwe(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
+    '''Returns a pd.Series of exact Hardy-Weinberg-tests for a given set of SNPs for one population (calling the function  of Wigginton et al. 2005). A pd.Series of given alleles, found at each locus has to specified (pot_alleles). If a locus has only Ns, 'NA' will be returned.'''
     obs_het= 0
     obs_hom1= 0
     obs_hom2= 0
-    for val in locus_pop_subset:
-	pot_allele_1, pot_allele_2 = pot_alleles.split(allele_sep)
-	if val == NA:
-	    continue
-	else:
-	    pop_allele_1, pop_allele_2 = val.split(allele_sep)
-	    if pop_allele_1 != pop_allele_2:
-		obs_het += 1
-	    elif pop_allele_1 == pot_allele_1:
-		obs_hom1 += 1
+    is_N = locus_pop_subset == NA
+    if is_N.all():
+	return 'NA'
+    else:
+	for val in locus_pop_subset:
+	    pot_allele_1, pot_allele_2 = pot_alleles.split(allele_sep)
+	    if val == NA:
+		continue
 	    else:
-		obs_hom2 += 1
-    return hwe.Hardy_Weinberg_Equilibrium_exact_test_user_Kantale(obs_het, obs_hom1, obs_hom2)
+		pop_allele_1, pop_allele_2 = val.split(allele_sep)
+		if pop_allele_1 != pop_allele_2:
+		    obs_het += 1
+		elif pop_allele_1 == pot_allele_1:
+		    obs_hom1 += 1
+		else:
+		    obs_hom2 += 1
+	return hwe.Hardy_Weinberg_Equilibrium_exact_test_user_Kantale(obs_het, obs_hom1, obs_hom2)
 ####
 
 def get_homo_prob(base_list, count_list, allele_list):
@@ -369,58 +374,4 @@ def get_structure_format(allele_list, allele_sep= ' ', NA= 'N'):
 	    value = nucleo.get(allele_1) + allele_sep + nucleo.get(allele_2)
 	output.append(value)
     return output
-
-
-if __name__ == "__main__":
-    # that's old stuff, currently, don't use this from the command line, but instead use the gbs.py version !
-    if len(sys.argv > 1):
-        hmp = pd.read_table(sys.argv[2], index_col = 0, header = 0)
-        hmc = pd.read_table(sys.argv[3], index_col = 0, header = 0)
-    else:
-	hmp = pd.read_table('HapMap.hmp.txt', index_col = 0, header = 0)
-	hmc = pd.read_table('HapMap.hmc.txt', index_col = 0, header = 0)
-	
-	# only use the actual samples
-	hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
-	# drop all the columns with more than 90 (default) per cent 'N's (not yet needed)
-	# hmp_trimmed = drop_N_columns(hmp_trimmed)
-	
-	# filter according to read depth count in hmc (default threshold = 4)
-	#filter_results = []
-	#for i, col in enumerate(hmp_trimmed.columns):
-	#	base_values = hmp_trimmed[col]
-	#	count_values = hmc[hmc.columns[i]]
-	#	filter_results.append(filter_single_col(base_values, count_values))
-	
-	# df = pd.DataFrame(zip(*filter_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
-	
-	# transform ambiguous iupac codes to unambiguous nucleotides
-	unambiguous_results = []
-	for i, col in enumerate(hmp_trimmed.columns):
-		base_list = hmp_trimmed[col]
-		count_list = hmc[hmc.columns[i]]
-		unambiguous_results.append(get_loci_from_iupac_codes(base_list, count_list, hmp.alleles))
-	
-	data_unambiguous = pd.DataFrame(zip(*unambiguous_results), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
-	
-	# transform dataset into genepop format (first step)
-	numeric_alleles = []
-	for col in data_unambiguous.columns:
-	    allele_list = data_unambiguous[col]
-	    numeric_alleles.append(get_genepop_codes(allele_list))
-	
-	data_numeric = pd.DataFrame(zip(*numeric_alleles), index = hmp_trimmed.index, columns=hmp_trimmed.columns, dtype = np.str)
-
-	# sort the data according to abundance of bases (as opposed to 'N's)
-	data_sorted4 = sort_loci_pdDF(data_unambiguous)
-	
-	# the alleles column gets to be inserted
-	data_sorted4.insert(0, 'alleles', hmp.ix[:, 'alleles'])
-	# and the additional information as well
-	df2 = hmp.ix[:, 'chrom': 'QCcode']
-	df = data_sorted4.join(df2)
-	
-	# some plotting to see the distributions
-	# write the output to a csv file
-	df.to_csv("data_sorted4.csv")
 
