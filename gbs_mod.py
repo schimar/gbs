@@ -172,7 +172,7 @@ def sort_loci_pdDF(data, NA= 'N'):
     return data_sorted
 
 ####
-def get_hwe(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
+def get_hwe_exact(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
     '''Returns a pd.Series of exact Hardy-Weinberg-tests for a given set of SNPs for one population (calling the function  of Wigginton et al. 2005). A pd.Series of given alleles, found at each locus has to specified (pot_alleles). If a locus has only Ns, 'NA' will be returned.'''
     obs_het= 0
     obs_hom1= 0
