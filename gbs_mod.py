@@ -193,9 +193,9 @@ def get_hwe_exact(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
 		    obs_hom1 += 1
 		else:
 		    obs_hom2 += 1
-	if obs_hom2 == 0 and obs_hets == 0:
+	if obs_hom2 == 0 and obs_het == 0:
 	    return 'NA'
-	elif obs_hom1 == 0 and obs_hets == 0:
+	elif obs_hom1 == 0 and obs_het == 0:
 	    return 'NA'
 	else:
 	    return hwe.Hardy_Weinberg_Equilibrium_exact_test_user_Kantale(obs_het, obs_hom1, obs_hom2)
