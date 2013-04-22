@@ -193,7 +193,13 @@ def get_hwe_exact(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
 		    obs_hom1 += 1
 		else:
 		    obs_hom2 += 1
-	return hwe.Hardy_Weinberg_Equilibrium_exact_test_user_Kantale(obs_het, obs_hom1, obs_hom2)
+	
+	if obs_hom2 == 0 and obs_hets == 0:
+	    return 'NA'
+	elif obs_hom1 == 0 and obs_hets == 0:
+	    return 'NA'
+	else:
+	    return hwe.Hardy_Weinberg_Equilibrium_exact_test_user_Kantale(obs_het, obs_hom1, obs_hom2)
 ####
 
 def get_homo_prob(base_list, count_list, allele_list):
@@ -215,6 +221,7 @@ def get_homo_prob(base_list, count_list, allele_list):
 	result.append(value)
     return result
 
+##
 def get_pooled_loci_no_N(data):
     '''Append all the cells that are not "N" to one big list'''
     prob_homo_values = []
