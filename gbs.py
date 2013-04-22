@@ -39,7 +39,7 @@ hmp_trimmed = hmp.ix[:, 'FLFL04':'WWA30']
 
 hmp_trim_drop1, hmc_drop1, drop_list = drop_N_loci(hmp_trimmed, hmc)
 
-alleles = hmp.alleles.drop(drop_list)
+alleles_drop = hmp.alleles.drop(drop_list)
 
 hmp_trim_drop2 = drop_N_individuals(hmp_trim_drop1)
 
@@ -60,7 +60,7 @@ alleles_zero_results = []
 for i, col in enumerate(data_hmp.columns):
     base_list = data_hmp[col]
     count_list = data_hmc[data_hmc.columns[i]]
-    alleles_zero_results.append(get_alleles_zero(base_list, count_list, hmp.alleles))
+    alleles_zero_results.append(get_alleles_zero(base_list, count_list, alleles_drop))
 
 data_zero = pd.DataFrame(zip(*alleles_zero_results), index = data_hmp.index, columns=data_hmp.columns, dtype = np.str)
 
@@ -70,12 +70,14 @@ data_zero_drop, hmc_zero_drop, drop_list_zero = drop_N_loci(data_zero, hmc_drop1
 #################################################################
 data_hmp = hmp_trim_drop2.copy()
 data_hmc = hmc_drop1.copy()
+allels = hmp.alleles.drop
+
 
 alleles_4base_results = []
 for i, col in enumerate(data_hmp.columns):
     base_list = data_hmp[col]
     count_list = data_hmc[data_hmc.columns[i]]
-    alleles_4base_results.append(get_alleles_4base(base_list, count_list, alleles))
+    alleles_4base_results.append(get_alleles_4base(base_list, count_list, alleles_drop))
 
 data_4base = pd.DataFrame(zip(*alleles_4base_results), index = data_hmp.index, columns=data_hmp.columns, dtype = np.str)
 
@@ -93,7 +95,7 @@ adv_fil_results = []
 for i, col in enumerate(data_hmp.columns):
     base_list = data_hmp[col]
     count_list = data_hmc[data_hmc.columns[i]]
-    adv_fil_results.append(get_alleles_adv(base_list, count_list, alleles))
+    adv_fil_results.append(get_alleles_adv(base_list, count_list, alleles_drop))
 
 data_adv = pd.DataFrame(zip(*adv_fil_results), index = data_hmp.index, columns= data_hmp.columns, dtype = np.str)
 
@@ -108,7 +110,7 @@ MAF_results = []
 for i, col in enumerate(data_hmp.columns):
     base_list = data_hmp[col]
     count_list = data_hmc[data_hmc.columns[i]]
-    MAF_results.append(get_alleles_MAF(base_list, count_list, alleles))
+    MAF_results.append(get_alleles_MAF(base_list, count_list, alleles_drop))
 
 data_MAF = pd.DataFrame(zip(*MAF_results), index = data_hmp.index, columns= data_hmp.columns, dtype = np.str)
 
@@ -174,11 +176,11 @@ tdata.to_csv("4base_MAF_sorted.csv")
 #################################################################
 # Calculate HWE exact test for each population
 #################################################################
-# change data_4base... to respective filter output
+# change <data_4base...> and <drop_list...> to respective filter output
 
 data = data_4base_drop.copy() 
 ##
-alleles_4base = hmp.alleles.drop(drop_list_4base)
+alleles = hmp.alleles.drop(drop_list_4base)
 
 grouped = data.groupby(lambda x: re.match("[A-Z]+", x).group(), axis=1)
 #
