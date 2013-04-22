@@ -171,6 +171,29 @@ tdata.insert(0, 'population', pops)
 
 tdata.to_csv("4base_MAF_sorted.csv")
 
+#################################################################
+# Calculate HWE exact test for each population
+#################################################################
+# change data_4base... to respective filter output
+
+data = data_4base_drop.copy() 
+##
+alleles_4base = hmp.alleles.drop(drop_list_4base)
+
+grouped = data.groupby(lambda x: re.match("[A-Z]+", x).group(), axis=1)
+#
+results= []
+for name, group in grouped:
+    hwe_list = []
+    for i, locus in enumerate(group.index):
+	hwe_per_pop = get_hwe_exact(group.xs(locus), alleles_4base[i])
+	hwe_list.append(hwe_per_pop)
+    results.append(hwe_list)
+
+hwe_df = pd.DataFrame(zip(*results), columns= ['FLFL', 'HSPQ', 'KFO', 'MI', 'SFQ', 'WWA'], index = data.index, dtype= np.int64)
+
+hwe_df.to_csv("hwe_4base.csv")
+
 
 #################################################################
 # not needed: transform dataset into genepop format (first step)
