@@ -64,7 +64,7 @@ for i, col in enumerate(data_hmp.columns):
 
 data_zero = pd.DataFrame(zip(*alleles_zero_results), index = data_hmp.index, columns=data_hmp.columns, dtype = np.str)
 
-data_zero_drop, hmc_zero_drop = drop_N_loci(data_zero)
+data_zero_drop, hmc_zero_drop, drop_list_zero = drop_N_loci(data_zero, hmc_drop1)
 #################################################################
 # SIMPLE FILTER with threshold 4 (for different threshold, change it in the get_alleles_4base(..., threshold= <value> (same goes for allele_sep and )
 #################################################################
