@@ -70,8 +70,6 @@ data_zero_drop, hmc_zero_drop, drop_list_zero = drop_N_loci(data_zero, hmc_drop1
 #################################################################
 data_hmp = hmp_trim_drop2.copy()
 data_hmc = hmc_drop1.copy()
-allels = hmp.alleles.drop
-
 
 alleles_4base_results = []
 for i, col in enumerate(data_hmp.columns):

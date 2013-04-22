@@ -173,13 +173,13 @@ def sort_loci_pdDF(data, NA= 'N'):
 
 ####
 def get_hwe_exact(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
-    '''Returns a pd.Series of exact Hardy-Weinberg-tests for a given set of SNPs for one population (calling the function  of Wigginton et al. 2005). A pd.Series of given alleles, found at each locus has to specified (pot_alleles). If a locus has only Ns, 'NA' will be returned.'''
+    '''Returns a pd.Series of exact Hardy-Weinberg-tests for a given set of SNPs for one population (calling the function  of Wigginton et al. 2005). A pd.Series of given alleles, found at each locus has to specified (pot_alleles). If a locus has only Ns, 'N' (default allele_sep) will be returned. If there's only one allele to be found at a given locus, 'NA' will be returned (not to be confused with the allele_sep; if allele_sep = 'NA' is specified, then you won't be able to distinguish the monomorphic loci and the ones where all individuals are 'N').'''
     obs_het= 0
     obs_hom1= 0
     obs_hom2= 0
     is_N = locus_pop_subset == NA
     if is_N.all():
-	return 'NA'
+	return NA
     else:
 	for val in locus_pop_subset:
 	    pot_allele_1, pot_allele_2 = pot_alleles.split(allele_sep)
@@ -193,7 +193,6 @@ def get_hwe_exact(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
 		    obs_hom1 += 1
 		else:
 		    obs_hom2 += 1
-	
 	if obs_hom2 == 0 and obs_hets == 0:
 	    return 'NA'
 	elif obs_hom1 == 0 and obs_hets == 0:
