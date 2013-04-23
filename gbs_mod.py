@@ -151,6 +151,8 @@ def get_alleles_MAF(base_list, count_list, allele_list, MAF = 0.45, allele_sep= 
 		value = str(allele_1 + allele_sep + allele_1) 
 	    elif count_2 > 0 and count_1 == 0:
 		value = str(allele_2 + allele_sep + allele_2)
+	    else:
+		value = NA
 	result.append(value)
     return result 
 
