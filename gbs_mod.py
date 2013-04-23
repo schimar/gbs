@@ -183,13 +183,15 @@ def get_hwe_exact(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
     if is_N.all():
 	return NA
     else:
-	for val in locus_pop_subset:
-	    pot_allele_1, pot_allele_2 = pot_alleles.split(allele_sep)
+	for i, val in enumerate(locus_pop_subset):
+	    pot_allele_1, pot_allele_2 = pot_alleles[i].split(allele_sep)
 	    if val == NA:
 		continue
 	    else:
 		pop_allele_1, pop_allele_2 = val.split(allele_sep)
-		if pop_allele_1 != pop_allele_2:
+		if pop_allele_1 == '?' or pop_allele_2 == '?':
+		    continue
+		elif pop_allele_1 != pop_allele_2:
 		    obs_het += 1
 		elif pop_allele_1 == pot_allele_1:
 		    obs_hom1 += 1
