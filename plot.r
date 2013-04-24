@@ -88,3 +88,31 @@ text(10, 50, labels= "homozygotes", srt=90)
      s <- s[-length(s)]
      segments(x[s], y[s], x[s+2], y[s+2], col= 'pink')
 
+
+
+###############################################################
+
+# hwe_exact test - plots
+
+###############################################################
+library(ggplot2)
+
+     
+setwd('/home/mschilling/Desktop/gbs/hwe')
+
+hwe_zero <- read.csv("hwe_zero.csv", header = T)
+hwe_4base <- read.csv("hwe_4base.csv", header = T)
+hwe_adv <- read.csv("hwe_adv.csv", header = T)
+hwe_MAF <- read.csv("hwe_MAF.csv", header = T)
+
+
+
+
+
+which(complete.cases(hwe_4base)== 'TRUE')
+
+
+####
+boxplot(hwe_4base[, c(2:7)])
+
+geom_violin(
