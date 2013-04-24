@@ -96,7 +96,7 @@ text(10, 50, labels= "homozygotes", srt=90)
 
 ###############################################################
 library(ggplot2)
-
+library(vioplot)
      
 setwd('/home/mschilling/Desktop/gbs/hwe')
 
@@ -106,9 +106,12 @@ hwe_adv <- read.csv("hwe_adv.csv", header = T)
 hwe_MAF <- read.csv("hwe_MAF.csv", header = T)
 
 
+pool_hwe_adv <- read.csv("pooled_hwe_adv", header = F)
 
+vioplot(pool_hwe_adv$V2, h=0.05, names= 'advanced filter', col= 'cyan')
+abline(h=0.05)
 
-
+###
 which(complete.cases(hwe_4base)== 'TRUE')
 
 
