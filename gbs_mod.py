@@ -184,7 +184,7 @@ def get_hwe_exact(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
 	return NA
     else:
 	for i, val in enumerate(locus_pop_subset):
-	    pot_allele_1, pot_allele_2 = pot_alleles[i].split(allele_sep)
+	    pot_allele_1, pot_allele_2 = pot_alleles.split(allele_sep)
 	    if val == NA:
 		continue
 	    else:
