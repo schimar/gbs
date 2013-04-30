@@ -34,7 +34,17 @@ library(pegas)
 
 setwd("/home/schimar/Desktop/lab/gbs/genepop/")
 #######
-data <- read.genepop("sub3000_sorted4_genepop.gen")
+zero <- read.genepop("zero.gen")
+
+fst_zero <- pairwise.fst(zero)
+###
+
+
+
+
+
+
+
 
 summ <- summary(data) # too big for interpretation (at least for me...)
 # N:
@@ -114,3 +124,21 @@ HWE.exact(as.genotype(flfl$TP156963))
 z <- as.loci(tzero)
 Fst(z)
 
+########## 
+
+from Bio.PopGen.GenePop.Controller import GenePopController
+
+ctrl = GenePopController()
+
+ctrl.calc_fst_all()
+
+
+##########
+from Bio.PopGen.GenePop.EasyController import EasyController
+ctrl = EasyController("zero.txt", "/home/mschilling/x_app/genePop/")
+
+#print ctrl.get_basic_info()
+
+pop_names, loci_names = ctrl.get_basic_info()
+
+Fis, Fst, Fit = ctrl.get_multilocus_f_stats()
