@@ -107,10 +107,15 @@ tMAF <- read.csv("t_MAF_all_NA.csv", header = T)
 
 
 tzero$population <- substring(tzero$X, 0, 2)
-flfl <- subset(tzero, tzero$pop == 'FLF')
+flfl <- subset(tzero, tzero$population == 'FL')
 HWE.test(as.genotype(flfl$TP156963))
 HWE.exact(as.genotype(flfl$TP156963))
 
 z <- as.loci(tzero)
 Fst(z)
+
+subtzero <- tzero[c(1, 160185, 2:1000)]
+
+tzero[c(1, 160185, 2:5000)]
+
 
