@@ -204,7 +204,7 @@ def get_hwe_exact(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
 	else:
 	    return hwe.Hardy_Weinberg_Equilibrium_exact_test_user_Kantale(obs_het, obs_hom1, obs_hom2)
 ####
-def expected_heterozygosity(genotype_array):
+def get_expected_heterozygosity(genotype_array):
     total = 0; p = 0
     p_allele = 'x' # p-allele is the first real (non-N) allele encountered and is used to caclulate p
     for genotype in genotype_array:
