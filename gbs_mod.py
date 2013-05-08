@@ -204,7 +204,22 @@ def get_hwe_exact(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
 	else:
 	    return hwe.Hardy_Weinberg_Equilibrium_exact_test_user_Kantale(obs_het, obs_hom1, obs_hom2)
 ####
-
+def get_expected_heterozygosity(genotype_array):
+    total = 0; p = 0
+    p_allele = 'x' # p-allele is the first real (non-N) allele encountered and is used to caclulate p
+    for genotype in genotype_array:
+        for allele in genotype:
+            if p_allele == 'x': # if the first allele not yet encountered
+                if (allele != 'N') and (allele != '/') and (allele != '?'):
+                    total +=1; p_allele = allele; p+=1
+            else: #p-allele now set to an allele in the list
+                if allele == p_allele:
+                    total +=1; p+=1
+                elif (allele != 'N') and (allele != '/') and (allele != '?'): # don't count 'N' or '/' in total
+                    total +=1
+    exp_het = 2*(float(p)/total)*(1-(float(p)/total))
+    return exp_het
+####
 def get_homo_prob(base_list, count_list, allele_list):
     '''Related to the filter functions ('get_alleles_4base', 'get_alleles_adv' and 'get_alleles_MAF'), this func calculates the probability of being homozygous for the given loci from the respective output data frame.'''
     result = []
