@@ -217,8 +217,11 @@ def get_expected_heterozygosity(genotype_array):
                     total +=1; p+=1
                 elif (allele != 'N') and (allele != '/') and (allele != '?'): # don't count 'N' or '/' in total
                     total +=1
-    exp_het = 2*(float(p)/total)*(1-(float(p)/total))
-    return exp_het
+    if total == 0:
+        exp_het = 0
+    else:
+        exp_het = 2*(float(p)/total)*(1-(float(p)/total))
+    return exp_het, total
 ####
 def get_homo_prob(base_list, count_list, allele_list):
     '''Related to the filter functions ('get_alleles_4base', 'get_alleles_adv' and 'get_alleles_MAF'), this func calculates the probability of being homozygous for the given loci from the respective output data frame.'''

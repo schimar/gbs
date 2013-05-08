@@ -176,9 +176,9 @@ tdata.to_csv("4base_MAF_sorted.csv")
 #################################################################
 # change <data_4base...> and <drop_list...> to respective filter output
 
-data = data_4base_drop.copy() 
+data = data_adv_drop.copy() 
 ##
-alleles = hmp.alleles.drop(drop_list_4base)
+alleles = hmp.alleles.drop(drop_list_adv)
 
 grouped = data.groupby(lambda x: re.match("[A-Z]+", x).group(), axis=1)
 #
@@ -186,26 +186,44 @@ results= []
 for name, group in grouped:
     hwe_list = []
     for i, locus in enumerate(group.index):
-	hwe_per_pop = get_hwe_exact(group.xs(locus), alleles_4base[i])
-	hwe_list.append(hwe_per_pop)
+	hwe_list.append(get_hwe_exact(group.xs(locus), alleles[i]))
     results.append(hwe_list)
 
-hwe_df = pd.DataFrame(zip(*results), columns= ['FLFL', 'HSPQ', 'KFO', 'MI', 'SFQ', 'WWA'], index = data.index, dtype= np.int64)
+hwe_df = pd.DataFrame(zip(*results), columns= ['FLFL', 'HSPQ', 'KFO', 'MI', 'SFQ', 'WWA'], index = data.index, dtype= np.float64)
 
-hwe_df.to_csv("hwe_4base.csv")
+hwe_df.to_csv("hwe_MAF.csv")
+
+#################################################################
+# get expected heterozygosity
+#################################################################
+data = data_adv_drop.copy() 
+##
+
+grouped = data.groupby(lambda x: re.match("[A-Z]+", x).group(), axis=1)
+#
+results= []
+for name, group in grouped:
+    exp_het_list = []
+    for i, locus in enumerate(group.index):
+	exp_het_list.append(get_expected_heterozygosity(group.xs(locus)))
+    results.append(exp_het_list)
+
+
+hwe_df = pd.DataFrame(zip(*results), columns= ['FLFL', 'HSPQ', 'KFO', 'MI', 'SFQ', 'WWA'], index = data.index, dtype= np.float64)
+
 
 
 #################################################################
-# not needed: transform dataset into genepop format (first step)
+# transform dataset into genepop format (first step)
 #################################################################
-data = data_sorted_hmp.copy()
+data = data_sorted.copy()
 
-structure_alleles = []
+genepop_alleles = []
 for col in data.columns:
     allele_list = data[col]
-    structure_alleles.append(get_genepop_codes(allele_list))
+    genepop_alleles.append(get_genepop_codes(allele_list))
 
-data_numeric = pd.DataFrame(structure_alleles, index = data.columns, columns=data.index, dtype = np.str)
+data_numeric = pd.DataFrame(genepop_alleles, index = data.columns, columns=data.index, dtype = np.str)
 
 # NOTE: from here on, the bases are numerically encoded
 # you still need to tweak the output file, refer to genepop format for further details
