@@ -204,7 +204,13 @@ def get_hwe_exact(locus_pop_subset, pot_alleles, allele_sep = '/', NA = 'N'):
 	else:
 	    return hwe.Hardy_Weinberg_Equilibrium_exact_test_user_Kantale(obs_het, obs_hom1, obs_hom2)
 ####
+
 def get_expected_heterozygosity(genotype_array):
+    """This function takes an array of genotypes in the format of a list of strings 'A/T' etc. and returns the (uncorrected) expected heterozygosity (2pq). Expected heterozygosity is a somewhat useful population measure of allelic diversity. It is particularly useful when there are several alleles. But this function only works for two alleles. 
+    The function sets the first non-N allele as the allele to be counted. 
+    **WARNINGS** 
+    1. Only works for 2 alleles (such as GBS data) 
+    2. Returns exp het = 0 if total alleles = 0. Maybe this should be 0 OR 1?""" 
     total = 0; p = 0
     p_allele = 'x' # p-allele is the first real (non-N) allele encountered and is used to caclulate p
     for genotype in genotype_array:
@@ -217,11 +223,12 @@ def get_expected_heterozygosity(genotype_array):
                     total +=1; p+=1
                 elif (allele != 'N') and (allele != '/') and (allele != '?'): # don't count 'N' or '/' in total
                     total +=1
-    if total == 0:
+    if total == 0:#Martin: I though we set this to <2?
         exp_het = 0
     else:
         exp_het = 2*(float(p)/total)*(1-(float(p)/total))
     return exp_het, total
+    
 ####
 def get_homo_prob(base_list, count_list, allele_list):
     '''Related to the filter functions ('get_alleles_4base', 'get_alleles_adv' and 'get_alleles_MAF'), this func calculates the probability of being homozygous for the given loci from the respective output data frame.'''
