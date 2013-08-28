@@ -1,4 +1,4 @@
-from gbs_cli import *
+from gbs_mod import *
 
 
 #################################################################
@@ -73,3 +73,10 @@ for val in replica_list:
 repl_summ_data = pd.DataFrame(zip(*proper), index= index, columns= col_names_replica)
 
 repl_summ_data.to_csv("MAF_replicate_summary.csv")
+
+######
+
+For each filter (including hmp), due to the 
+
+
+
