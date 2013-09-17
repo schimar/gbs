@@ -100,10 +100,10 @@ library(vioplot)
      
 setwd('/home/mschilling/Desktop/gbs/hwe')
 
-hwe_zero <- read.csv("hwe_zero.csv", header = T)
-hwe_4base <- read.csv("hwe_4base.csv", header = T)
-hwe_adv <- read.csv("hwe_adv.csv", header = T)
-hwe_MAF <- read.csv("hwe_MAF.csv", header = T)
+hwe_zero <- read.csv("hwe_zero_select.csv", header = T)
+hwe_4base <- read.csv("hwe_4base_select.csv", header = T)
+hwe_adv <- read.csv("hwe_adv_select.csv", header = T)
+hwe_MAF <- read.csv("hwe_MAF_select.csv", header = T)
 
 
 
