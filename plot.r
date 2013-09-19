@@ -109,21 +109,21 @@ hwe_MAF <- read.csv("hwe_MAF_select.csv", header = T)
 
 setwd( "/home/schimar/Desktop/lab/gbs/hwe")
 
-pool_zero <- read.csv("pooled_hwe_zero.csv", header = T)
-pool_4base <- read.csv("pooled_hwe_4base.csv", header = T)
-pool_adv <- read.csv("pooled_hwe_adv.csv", header = T)
-pool_MAF <- read.csv("pooled_hwe_MAF.csv", header = T)
+pool_zero <- read.csv("pooled_hwe_zero_select.csv", header = T)
+pool_4base <- read.csv("pooled_hwe_4base_select.csv", header = T)
+pool_adv <- read.csv("pooled_hwe_adv_select.csv", header = T)
+pool_MAF <- read.csv("pooled_hwe_MAF_select.csv", header = T)
 
 
 # "violin_hwe_per_pop.pdf"
 dat <- pool_adv
 
-x1 <- dat$X1[dat$X0 == 'FLFL']
-x2 <- dat$X1[dat$X0 == 'HSPQ']
-x3 <- dat$X1[dat$X0 == 'KFO']
-x4 <- dat$X1[dat$X0 == 'MI']
-x5 <- dat$X1[dat$X0 == 'SFQ']
-x6 <- dat$X1[dat$X0 == 'WWA']
+x1 <- dat$hwe[dat$population == 'FLFL']
+x2 <- dat$hwe[dat$population == 'HSPQ']
+x3 <- dat$hwe[dat$population == 'KFO']
+x4 <- dat$hwe[dat$population == 'MI']
+x5 <- dat$hwe[dat$population == 'SFQ']
+x6 <- dat$hwe[dat$population == 'WWA']
 
 # x3 has only 1s... 
 par(mfrow= c(2,2)) # then 4 times the one below, just change dat and x1 - x6
@@ -144,17 +144,17 @@ length(which(x4 > 0.05)) / length(x4)
 
 
 # "hwe_pooled_all_filters.pdf" (without KFO!)
-x1 <- pool_zero$X1[pool_zero$X0 != 'KFO']
-x2 <- pool_4base$X1[pool_4base$X0 != 'KFO']
-x3 <- pool_adv$X1[pool_adv$X0 != 'KFO']
-x4 <- pool_MAF$X1[pool_MAF$X0 != 'KFO']
+x1 <- pool_zero$hwe[pool_zero$population != 'KFO']
+x2 <- pool_4base$hwe[pool_4base$population != 'KFO']
+x3 <- pool_adv$hwe[pool_adv$population != 'KFO']
+x4 <- pool_MAF$hwe[pool_MAF$population != 'KFO']
 
-vioplot(x1, x2, x3, x4, h=0.05, names= c('hmp', '4base', 'adv', 'MAF'), col= 'grey80')
+vioplot(x1, x2, x3, x4, h=0.05, names= c('unfiltered', 'TF', 'AF', 'MAFF'), col= 'grey80')
 abline(h=0.05)
-text(0.8, 0.82, label= '79%')
-text(1.8, 0.82, label= '74%')
-text(2.8, 0.82, label= '93%')
-text(3.8, 0.82, label= '51%')
+text(0.8, 0.82, label= '80%')
+text(1.8, 0.82, label= '79%')
+text(2.8, 0.82, label= '95%')
+text(3.8, 0.82, label= '57%')
 
 ###
 which(complete.cases(hwe_4base)== 'TRUE')
