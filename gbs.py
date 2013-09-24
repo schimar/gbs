@@ -42,6 +42,38 @@ hmp_trim_drop1, hmc_drop1, drop_list = drop_N_loci(hmp_trimmed, hmc)
 alleles_drop = hmp.alleles.drop(drop_list)
 
 hmp_trim_drop2 = drop_N_individuals(hmp_trim_drop1)
+#################################################################
+##### REPLICATE SELECTION (based on highest read-depth)
+
+data = hmp_trim_drop2.copy()
+
+rep_list = get_rep_list(data)
+data = hmc_drop1[rep_list].copy()
+#
+grouped = data.groupby(lambda x: re.match("[A-Z]+[0-9]+", x).group(), axis=1)
+#
+results= {}
+for name, group in grouped:
+    results.update(get_read_depth_per_group(name))
+#
+highest_reps = []
+for val in results.keys():
+    highest_reps.append(max(results.get(val), key=results.get(val).get))
+    
+highest_reps.sort()
+#
+data = hmp_trim_drop2.copy()
+
+for val in rep_list:
+    data.pop(val)
+
+new_columns = highest_reps + list(data.columns)
+new_columns.sort()
+# 
+hmp_select = hmp_trim_drop2[new_columns]
+hmc_select = hmc_drop1[new_columns]
+
+
 
 #################################################################
 ##### FILTER 
@@ -53,8 +85,8 @@ hmp_trim_drop2 = drop_N_individuals(hmp_trim_drop1)
 #################################################################
 # SIMPLE FILTER for the initial dataset (without a threshold !!)
 #################################################################
-data_hmp = hmp_trim_drop2.copy()
-data_hmc = hmc_drop1.copy()
+data_hmp = hmp_select.copy()
+data_hmc = hmc_select.copy()
 
 alleles_zero_results = []
 for i, col in enumerate(data_hmp.columns):
@@ -68,8 +100,8 @@ data_zero_drop, hmc_zero_drop, drop_list_zero = drop_N_loci(data_zero, hmc_drop1
 #################################################################
 # SIMPLE FILTER with threshold 4 (for different threshold, change it in the get_alleles_4base(..., threshold= <value> (same goes for allele_sep and )
 #################################################################
-data_hmp = hmp_trim_drop2.copy()
-data_hmc = hmc_drop1.copy()
+data_hmp = hmp_select.copy()
+data_hmc = hmc_select.copy()
 
 alleles_4base_results = []
 for i, col in enumerate(data_hmp.columns):
@@ -86,8 +118,8 @@ data_4base_drop, hmc_4base_drop2, drop_list_4base = drop_N_loci(data_4base, hmc_
 # ADVANCED FILTER with threshold (default = 4) and '?' 
 # (where threshold of 2nd allele is < 4, if 1st allele < 2* threshold)
 #################################################################
-data_hmp = hmp_trim_drop2.copy()
-data_hmc = hmc_drop1.copy()
+data_hmp = hmp_select.copy()
+data_hmc = hmc_select.copy()
 
 adv_fil_results = []
 for i, col in enumerate(data_hmp.columns):
@@ -101,8 +133,8 @@ data_adv_drop, hmc_drop_adv, drop_list_adv = drop_N_loci(data_adv, hmc_drop1)
 #################################################################
 # MAF filter 
 #################################################################
-data_hmp = hmp_trim_drop2.copy()
-data_hmc = hmc_drop1.copy()
+data_hmp = hmp_select.copy()
+data_hmc = hmc_select.copy()
 
 MAF_results = []
 for i, col in enumerate(data_hmp.columns):

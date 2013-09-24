@@ -51,6 +51,39 @@ def filter_single_col(base_list, count_list, threshold = 4):
         output.append(value)
     return output
 
+def get_rep_list(data):
+    '''Takes a list of column names and outputs a list of all the replicated samples. This only works, if replicates are denoted with, e.g. FLFL04 for the 1st sample, FLFL04replicate, FLFL04replicate2, etc.'''
+    rep_list = []
+    for i, col in enumerate(data.columns):
+	if re.match("[A-Z]+[0-9]+[a-z]+[0-9]+", col):
+	    rep_list.append(re.findall("[A-Z]+[0-9]+", col)[0])
+	    rep_list.append(data.columns[i-1])
+	    rep_list.append(col)
+	elif re.match("[A-Z]+[0-9]+[a-z]+", col):
+	    rep_list.append(col)
+	    rep_list.append(re.findall("[A-Z]+[0-9]+", col)[0])
+    rep_list = list(np.unique(np.array(rep_list)))
+    return rep_list
+    
+def count_read_depth(replicate):
+    '''Takes a pd.Series of read-depth data (usually coming in HapMap format) and takes the sum of the read-depth'''
+    read_depth_1, read_depth_2 = 0, 0
+    for val in replicate:
+	val_1, val_2 = map(int, val.split('|'))
+	read_depth_1 += val_1
+	read_depth_2 += val_2
+    return read_depth_1 + read_depth_2
+
+def get_read_depth_per_group(sub_group):
+    '''Calls the count_read_depth function and inserts the results in a nested dict with keys= replicate-groups'''
+    rep_read_depth = {}
+    for rep in grouped.get_group(sub_group):
+	rep_read_depth[rep]=(count_read_depth(grouped.get_group(sub_group)[rep]))
+    hierarch_read_depth = {}
+    hierarch_read_depth[sub_group] = rep_read_depth 
+    return hierarch_read_depth
+
+
 
 def get_alleles_zero(base_list, count_list, allele_list, allele_sep='/', NA= 'N'):
     '''Returns a list of nucleotides where ambiguity codes have been changed to their respective value based on a list of measured allele levels. Seperator between alleles (default= '/') can be specified with allele_sep= '<seperator>'. Missing values can be specified with NA= '<NA>' '''
