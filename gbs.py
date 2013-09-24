@@ -54,7 +54,7 @@ grouped = data.groupby(lambda x: re.match("[A-Z]+[0-9]+", x).group(), axis=1)
 #
 results= {}
 for name, group in grouped:
-    results.update(get_read_depth_per_group(name))
+    results.update(get_read_depth_per_group(grouped, name))
 #
 highest_reps = []
 for val in results.keys():

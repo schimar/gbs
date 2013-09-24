@@ -74,7 +74,7 @@ def count_read_depth(replicate):
 	read_depth_2 += val_2
     return read_depth_1 + read_depth_2
 
-def get_read_depth_per_group(sub_group):
+def get_read_depth_per_group(grouped, sub_group):
     '''Calls the count_read_depth function and inserts the results in a nested dict with keys= replicate-groups'''
     rep_read_depth = {}
     for rep in grouped.get_group(sub_group):
