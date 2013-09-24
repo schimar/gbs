@@ -153,7 +153,7 @@ zyg_types.to_csv("allele_types2_4base_zero.csv")
 
 #################################################################
 # sort the data according to abundance of bases (as opposed to 'N's)
-# and prepare it for pegas (R)
+
 #################################################################
 data_sorted = sort_loci_pdDF(data_4base)
 
@@ -176,9 +176,9 @@ tdata.to_csv("4base_MAF_sorted.csv")
 #################################################################
 # change <data_4base...> and <drop_list...> to respective filter output
 
-data = data_adv_drop.copy() 
+data = data_zero_drop.copy() 
 ##
-alleles = hmp.alleles.drop(drop_list_adv)
+alleles = hmp.alleles.drop(drop_list_zero)
 
 grouped = data.groupby(lambda x: re.match("[A-Z]+", x).group(), axis=1)
 #
@@ -192,6 +192,8 @@ for name, group in grouped:
 hwe_df = pd.DataFrame(zip(*results), columns= ['FLFL', 'HSPQ', 'KFO', 'MI', 'SFQ', 'WWA'], index = data.index, dtype= np.float64)
 
 hwe_df.to_csv("hwe_MAF.csv")
+
+# loop into one list (w/ pops in second column)
 
 #################################################################
 # get expected heterozygosity
@@ -228,30 +230,7 @@ data_numeric = pd.DataFrame(genepop_alleles, index = data.columns, columns=data.
 # NOTE: from here on, the bases are numerically encoded
 # you still need to tweak the output file, refer to genepop format for further details
 
-#################################################################
-# change to structure format
-#################################################################
-data = data_sorted_zero.copy()
 
-structure_alleles = []
-for col in data.columns:
-    allele_list = data[col]
-    structure_alleles.append(get_structure_format(allele_list, allele_sep= ' ', NA='-9'))
-
-header = []
-for i, sample in enumerate(data.columns):
-    population = re.findall('([A-Z]+)', sample)
-    header.append(population)
-
-#transposed_structure = zip(*structure_alleles)
-#transposed_structure.insert(0, header)
-
-
-# prepare column and index for pd.DataFrame
-
-data_structure = pd.DataFrame(structure_alleles, index = data.columns, columns=data.index, dtype = np.str)
-
-data_structure.insert(0, 'population', header)
 #################################################################
 # write output file:
 #################################################################
