@@ -347,9 +347,10 @@ def get_hmp_replica_summ(repl_1, repl_2):
     replica.append([equal_not_N, not_equal, ambig, equal_not_N+not_equal+ambig, NN, Nn])
     return replica
 
+
 def get_filter_replica_summ(repl_1, repl_2):
     '''Gives a summary list for the comparison of 2 replicate samples of the filtered output'''
-    NN, Nn, equal_not_N, not_equal, ambig = (0,0,0,0,0)
+    NN, Nn, equal_not_N, ambig, single_mis, double_mis = (0,0,0,0,0,0)
     replica = []
     N_1 = repl_1 == 'N'
     N_2 = repl_2 == 'N'
@@ -367,13 +368,14 @@ def get_filter_replica_summ(repl_1, repl_2):
 	    if equal:
 		equal_not_N += 1
 	    elif rep_1_allele_1 == rep_2_allele_1 or rep_1_allele_2 == rep_2_allele_2:
-		ambig += 1
+		if rep_1_allele_1 == '?' or rep_2_allele_1 == '?' or rep_1_allele_2 == '?' or rep_2_allele_2 == '?':
+		    ambig += 1
+		else: 
+		    single_mis += 1
 	    else:
-		not_equal += 1
-    replica.append([equal_not_N, not_equal, ambig, equal_not_N+not_equal+ambig, NN, Nn])
+		double_mis += 1
+    replica.append([equal_not_N, single_mis, double_mis, ambig, equal_not_N+single_mis+double_mis+ambig, NN, Nn])
     return replica
-
-
 
 def import_raw_loci(filename):
     '''Retrieve sequencing data from the text file and store it in a numpy array'''
