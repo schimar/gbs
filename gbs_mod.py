@@ -347,7 +347,6 @@ def get_hmp_replica_summ(repl_1, repl_2):
     replica.append([equal_not_N, not_equal, ambig, equal_not_N+not_equal+ambig, NN, Nn])
     return replica
 
-
 def get_filter_replica_summ(repl_1, repl_2):
     '''Gives a summary list for the comparison of 2 replicate samples of the filtered output'''
     NN, Nn, equal_not_N, ambig, single_mis, double_mis = (0,0,0,0,0,0)
@@ -370,9 +369,9 @@ def get_filter_replica_summ(repl_1, repl_2):
 	    elif rep_1_allele_1 == rep_2_allele_1 or rep_1_allele_2 == rep_2_allele_2:
 		if rep_1_allele_1 == '?' or rep_2_allele_1 == '?' or rep_1_allele_2 == '?' or rep_2_allele_2 == '?':
 		    ambig += 1
-		else: 
+		elif rep_1_allele_1 == rep_2_allele_1 and rep_1_allele_2 != rep_2_allele_2 or rep_1_allele_2 == rep_2_allele_2 and rep_1_allele_1 != rep_2_allele_1: 
 		    single_mis += 1
-	    else:
+	    elif rep_1_allele_1 != rep_2_allele_1 and rep_1_allele_1 != rep_2_allele_2:
 		double_mis += 1
     replica.append([equal_not_N, single_mis, double_mis, ambig, equal_not_N+single_mis+double_mis+ambig, NN, Nn])
     return replica
