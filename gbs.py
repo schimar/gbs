@@ -56,6 +56,7 @@ results= {}
 for name, group in grouped:
     results.update(get_read_depth_per_group(grouped, name))
 #
+
 highest_reps = []
 for val in results.keys():
     highest_reps.append(max(results.get(val), key=results.get(val).get))
