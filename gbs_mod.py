@@ -304,6 +304,18 @@ def get_pooled_loci_no_N(data):
                 prob_homo_values.append(value)
     return prob_homo_values
 
+
+def get_pooled_hmc(data):
+    '''Append all the cells of hmc into one list'''
+    pooled_values = []
+    for column in data.columns:
+        for value in data.ix[:, column]:
+	    if isinstance(value, basestring):
+		pooled_values.append(map(int, value.split('|')))
+    return pooled_values
+
+
+
 def get_zygosity_types(pooled_data):
     '''loops over a pooled list of all the values from the matrix (see "backtrack the count_values") and creates a new list of the same length and assigns zygosity types (0 = 'N', 11 = homo, 12 = hetero and 13 = "N/?"'''
     allele_types = []

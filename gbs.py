@@ -256,7 +256,14 @@ for name, group in grouped:
 
 hwe_df = pd.DataFrame(zip(*results), columns= ['FLFL', 'HSPQ', 'KFO', 'MI', 'SFQ', 'WWA'], index = data.index, dtype= np.float64)
 
+#################################################################
+# get read depth total for each filter (change input for other filters)
+#################################################################
+hmc_zero_drop = hmc_zero_drop[data_zero_drop.columns]
 
+pooled_hmc_zero = get_pooled_hmc(hmc_zero_drop)
+pooled_hmc_zero = pd.DataFrame(pooled_hmc_zero)
+pooled_hmc_zero.to_csv("pooled_hmc_zero.csv")
 
 #################################################################
 # transform dataset into genepop format (first step)
