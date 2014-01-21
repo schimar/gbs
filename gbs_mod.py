@@ -314,7 +314,13 @@ def get_pooled_hmc(data):
 		pooled_values.append(map(int, value.split('|')))
     return pooled_values
 
-
+def get_read_sum_hmc(data):
+    '''For each column (pd.Series), this function adds read data of both alleles in each cell and returns a dataFrame of the same dimensions as the input df.'''
+    sum_reads = []
+    for value in data:
+	count_1, count_2 = map(int, value.split('|'))
+	sum_reads.append(count_1 + count_2)
+    return sum_reads
 
 def get_zygosity_types(pooled_data):
     '''loops over a pooled list of all the values from the matrix (see "backtrack the count_values") and creates a new list of the same length and assigns zygosity types (0 = 'N', 11 = homo, 12 = hetero and 13 = "N/?"'''

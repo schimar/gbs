@@ -266,6 +266,20 @@ pooled_hmc_zero = pd.DataFrame(pooled_hmc_zero)
 pooled_hmc_zero.to_csv("pooled_hmc_zero.csv")
 
 #################################################################
+# get read depth sum per sample (unfiltered hmc)
+#################################################################
+hmc_trim = hmc.ix[:, 'FLFL04':'WWA30']
+
+total_sum_reads = []
+for i, col in enumerate(hmc_trim.columns):
+    hmc_single = hmc_trim[col]
+    total_sum_reads.append(get_read_sum_hmc(hmc_single))
+
+df_sum_reads = pd.DataFrame(zip(*total_sum_reads),index = hmc_trim.index, columns = hmc_trim.columns)
+
+total_read_sum_per_sample = df_sum_reads.sum()
+
+#################################################################
 # transform dataset into genepop format (first step)
 #################################################################
 data = data_sorted.copy()
