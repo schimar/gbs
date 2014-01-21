@@ -15,13 +15,13 @@ USAGE NOTES
   This script calls functions, defined in gbs_mod.py. Follow the script from an IDE or in the console. 
   Import all necessary modules and read in the hmp and hmc files. 
   (Rename your files appropriately or change the script)  
-
-* replica.py: This file contains the function calls to calculate error rates. 
-  It calls the functions that are defined in gbs_mod.py.
+* gbs_mod.py: Contains the functions for gbs.py
+* replica.py: This file contains the functions to calculate mismatch rates. 
+  It calls functions that are defined in gbs_mod.py.
 
 * plot.r: contains some barplot and violinplot calls for R. 
 
-* plot_locus.py: contains some distribution plotting calls for python/matplotlib.
+* plot_locus.py: contains some basic distribution plotting calls for python/matplotlib.
 
 
 
