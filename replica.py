@@ -62,7 +62,7 @@ for pop in data.columns:
     elif re.findall('([A-Z]+[0-9]+[a-z]+)', pop):
 	col_names_replica.append(re.findall('([A-Z]+[0-9]+)', pop)[0])
 
-index = ['equal_not_N', 'not_equal', 'ambig', 'total_not_N', 'NN', 'Nn']
+index = ['equal_not_N', 'single_mism', 'double_mism', 'ambig', 'total_not_N', 'NN', 'Nn']
 
 ####
 proper = []
@@ -74,9 +74,7 @@ repl_summ_data = pd.DataFrame(zip(*proper), index= index, columns= col_names_rep
 
 repl_summ_data.to_csv("MAF_replicate_summary.csv")
 
-######
 
-For each filter (including hmp), due to the 
 
 
 
