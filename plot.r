@@ -4,27 +4,34 @@ library(gplots)
 ##################
 # barplot_filter_types
 
-filt_matr <- matrix(rbind(homozygotes= c(5758665, 6191765, 2203459, 915009), heterozygotes= c(562149, 129049, 163955, 163955), ambiguous= c(0, 0, 0, 1288450), deparse.level=1), nrow= 3, ncol=4, dimnames= list(c("homozygous", "heterozygous", "ambiguous"), c("initial", "MAF", "4base", "adv")))
+#filt_matr <- matrix(rbind(homozygotes= c(5758665, 6191765, 2203459, 915009), heterozygotes= c(562149, 129049, 163955, 163955), ambiguous= c(0, 0, 0, 1288450), deparse.level=1), nrow= 3, ncol=4, dimnames= list(c("homozygous", "heterozygous", "ambiguous"), c("initial", "MAF", "4base", "adv")))
 
 ###
-barplot2(filt_matr, beside=F, col = c("white", "gray50", "gray72"), main = "Filter results", xlab = "Filter type", ylab= "Frequency", ylim= c(0, 7000000), col.sub= "gray50", plot.grid= TRUE, grid.inc= 6, legend = rownames(filt_matr), axis.lty= 1)
-text(c(0.7, 1.92, 3.11, 4.32, 0.7, 1.92, 3.11, 4.32, 4.32), 
-     c(500000, 500000, 500000, 500000, 6000000, 6000000, 2500000, 1000000, 1700000), labels= c("91%", "98%", "93%", "39%", 
-	     "9%", "2%", "6.9%", "6.9%", "54%"))
-box()
+#barplot2(filt_matr, beside=F, col = c("white", "gray50", "gray72"), main = "Filter results", xlab = "Filter type", ylab= "Frequency", ylim= c(0, 7000000), col.sub= "gray50", plot.grid= TRUE, grid.inc= 6, legend = rownames(filt_matr), axis.lty= 1)
+#text(c(0.7, 1.92, 3.11, 4.32, 0.7, 1.92, 3.11, 4.32, 4.32), 
+#     c(500000, 500000, 500000, 500000, 6000000, 6000000, 2500000, 1000000, 1700000), labels= c("91%", "98%", "93%", "39%", 
+#	     "9%", "2%", "6.9%", "6.9%", "54%"))
+#box()
 ##
+###############################
 # used this one! 
-filt_matr2 <- matrix(rbind(homozygotes= c(5758665, 2203459, 915009, 6191765), heterozygotes= c(562149, 163955, 163955, 129049), ambiguous= c(0, 0, 1288450, 0), deparse.level=1), nrow= 3, ncol=4, dimnames= list(c("homozygous", "heterozygous", "ambiguous"), c("initial", "4base", "adv", "MAF")))
+filt_matr2 <- matrix(rbind(homozygotes= c(5758665, 2203459, 915009, 6191765), heterozygotes= c(562149, 163955, 163955, 129049), ambiguous= c(0, 0, 1288450, 0), deparse.level=1), nrow= 3, ncol=4, dimnames= list(c("homozygous", "heterozygous", "ambiguous"), c("unfiltered", "TF", "AF", "MAFF")))
 
 ##
-barplot2(filt_matr2, beside=F, col = c("white", "gray50", "gray72"), xlab = "Filter type", ylab= "Frequency", ylim= c(0, 7000000), col.sub= "gray50", plot.grid= F, grid.inc= 6, axis.lty= 1)
+postscript(file="try.ps", horizontal=F, onefile=F, width=12, height=8, family=c("/home/schimar/arial.afm", "/home/schimar/arialbd.afm", "/home/schimar/ariali.afm", "/home/schimar/arialbi.afm"), pointsize=12) 
+
+barplot2(filt_matr2, beside=F, col = c("white", "gray50", "gray72"), xlab = "Filter type", ylab= "Frequency", ylim= c(0, 7000000), col.sub= "gray50", plot.grid= F, grid.inc= 6, axis.lty= 1, yaxt= 'n')
+axis(2, axTicks(2), format(axTicks(2), scientific = F))
 
 legend(2.3, 6800000, c("homozygous", "heterozygous", "ambiguous"), fill = c("white", "gray50", "gray72"))
 
 text(c(0.7, 1.92, 3.11, 4.32, 0.7, 1.92, 3.11, 3.11, 4.32), c(500000, 500000, 500000, 500000, 6000000, 2500000, 1000000, 1700000, 6000000), labels= c("91%", "93%", "39%", "98%", "9%", "6.9%", "6.9%", "54%", "2%"))
 box()
 
-###
+
+dev.off()
+#########
+#########
 dev.copy2pdf(file="barplot_filter_types_ordered.pdf")
 
 ##################
@@ -35,6 +42,8 @@ hist(homo_prob_MAF_total$V2, ylim=c(0,200000))
 
 ##################
 # filter expl.  plots:
+
+# postscript(file="try.ps", horizontal=F, onefile=F, width=12, height=8, family=c("/home/schimar/arial.afm", "/home/schimar/arialbd.afm", "/home/schimar/ariali.afm", "/home/schimar/arialbi.afm"), pointsize=12)
 
 x <- c(4, 6, 20)
 y <- c(0, 3, 6)
@@ -149,6 +158,9 @@ x2 <- pool_4base$hwe[pool_4base$population != 'KFO']
 x3 <- pool_adv$hwe[pool_adv$population != 'KFO']
 x4 <- pool_MAF$hwe[pool_MAF$population != 'KFO']
 
+
+postscript(file="try.ps", horizontal=T, onefile=F, width=24, height=8, family=c("/home/schimar/arial.afm", "/home/schimar/arialbd.afm", "/home/schimar/ariali.afm", "/home/schimar/arialbi.afm"), pointsize=12) 
+
 vioplot(x1, x2, x3, x4, h=0.05, names= c('unfiltered', 'TF', 'AF', 'MAFF'), col= 'grey80')
 abline(h=0.05)
 text(0.8, 0.82, label= '80%')
@@ -156,11 +168,25 @@ text(1.8, 0.82, label= '79%')
 text(2.8, 0.82, label= '95%')
 text(3.8, 0.82, label= '57%')
 
+dev.off()
 ###
 which(complete.cases(hwe_4base)== 'TRUE')
 
 
 ####
-boxplot(hwe_4base[, c(2:7)])
+# Nisqually cumulative GBS sites
 
-geom_violin(
+nisq <- read.csv("cumulative_GBS_sites.csv", header = F)
+
+
+####
+postscript(file="try.ps", horizontal=T, onefile=F, width=24, height=8, family=c("/home/schimar/arial.afm", "/home/schimar/arialbd.afm", "/home/schimar/ariali.afm", "/home/schimar/arialbi.afm"), pointsize=12) 
+
+plot(log(nisq$V1), nisq$V2, pch= 20, xlab= "Number of replicates pooled", ylab= "Number of loci", xaxt= 'n')
+lines(x= log(nisq$V1), y= nisq$V2)
+axis(side= 1, at= c(0, 0.6931472, 1.3862944, 2.0794415, 2.7725887), labels= c(1,2,4,8,16))
+
+dev.off()
+
+
+

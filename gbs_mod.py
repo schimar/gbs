@@ -1,3 +1,13 @@
+# Copyright (c) <2013>, <Martin P Schilling>
+# All rights reserved.
+
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+# Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+# Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+####
 '''Filter and sorting for GBS (Genotyping by Sequencing) HapMap files'''
 
 from __future__ import division
@@ -294,6 +304,24 @@ def get_pooled_loci_no_N(data):
                 prob_homo_values.append(value)
     return prob_homo_values
 
+
+def get_pooled_hmc(data):
+    '''Append all the cells of hmc into one list'''
+    pooled_values = []
+    for column in data.columns:
+        for value in data.ix[:, column]:
+	    if isinstance(value, basestring):
+		pooled_values.append(map(int, value.split('|')))
+    return pooled_values
+
+def get_read_sum_hmc(data):
+    '''For each column (pd.Series), this function adds read data of both alleles in each cell and returns a dataFrame of the same dimensions as the input df.'''
+    sum_reads = []
+    for value in data:
+	count_1, count_2 = map(int, value.split('|'))
+	sum_reads.append(count_1 + count_2)
+    return sum_reads
+
 def get_zygosity_types(pooled_data):
     '''loops over a pooled list of all the values from the matrix (see "backtrack the count_values") and creates a new list of the same length and assigns zygosity types (0 = 'N', 11 = homo, 12 = hetero and 13 = "N/?"'''
     allele_types = []
@@ -347,7 +375,6 @@ def get_hmp_replica_summ(repl_1, repl_2):
     replica.append([equal_not_N, not_equal, ambig, equal_not_N+not_equal+ambig, NN, Nn])
     return replica
 
-
 def get_filter_replica_summ(repl_1, repl_2):
     '''Gives a summary list for the comparison of 2 replicate samples of the filtered output'''
     NN, Nn, equal_not_N, ambig, single_mis, double_mis = (0,0,0,0,0,0)
@@ -370,9 +397,9 @@ def get_filter_replica_summ(repl_1, repl_2):
 	    elif rep_1_allele_1 == rep_2_allele_1 or rep_1_allele_2 == rep_2_allele_2:
 		if rep_1_allele_1 == '?' or rep_2_allele_1 == '?' or rep_1_allele_2 == '?' or rep_2_allele_2 == '?':
 		    ambig += 1
-		else: 
+		elif rep_1_allele_1 == rep_2_allele_1 and rep_1_allele_2 != rep_2_allele_2 or rep_1_allele_2 == rep_2_allele_2 and rep_1_allele_1 != rep_2_allele_1: 
 		    single_mis += 1
-	    else:
+	    elif rep_1_allele_1 != rep_2_allele_1 and rep_1_allele_1 != rep_2_allele_2:
 		double_mis += 1
     replica.append([equal_not_N, single_mis, double_mis, ambig, equal_not_N+single_mis+double_mis+ambig, NN, Nn])
     return replica

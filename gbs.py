@@ -1,3 +1,13 @@
+# Copyright (c) <2013>, <Martin P Schilling>
+# All rights reserved.
+
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+# Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+# Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+####
 '''Filter and sorting for GBS (Genotyping by Sequencing) HapMap files'''
 
 from __future__ import division
@@ -246,7 +256,28 @@ for name, group in grouped:
 
 hwe_df = pd.DataFrame(zip(*results), columns= ['FLFL', 'HSPQ', 'KFO', 'MI', 'SFQ', 'WWA'], index = data.index, dtype= np.float64)
 
+#################################################################
+# get read depth total for each filter (change input for other filters)
+#################################################################
+hmc_zero_drop = hmc_zero_drop[data_zero_drop.columns]
 
+pooled_hmc_zero = get_pooled_hmc(hmc_zero_drop)
+pooled_hmc_zero = pd.DataFrame(pooled_hmc_zero)
+pooled_hmc_zero.to_csv("pooled_hmc_zero.csv")
+
+#################################################################
+# get read depth sum per sample (unfiltered hmc)
+#################################################################
+hmc_trim = hmc.ix[:, 'FLFL04':'WWA30']
+
+total_sum_reads = []
+for i, col in enumerate(hmc_trim.columns):
+    hmc_single = hmc_trim[col]
+    total_sum_reads.append(get_read_sum_hmc(hmc_single))
+
+df_sum_reads = pd.DataFrame(zip(*total_sum_reads),index = hmc_trim.index, columns = hmc_trim.columns)
+
+total_read_sum_per_sample = df_sum_reads.sum()
 
 #################################################################
 # transform dataset into genepop format (first step)
