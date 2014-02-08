@@ -404,6 +404,62 @@ def get_filter_replica_summ(repl_1, repl_2):
     replica.append([equal_not_N, single_mis, double_mis, ambig, equal_not_N+single_mis+double_mis+ambig, NN, Nn])
     return replica
 
+
+def get_replica_read_depth_minmax(data_hmp, data_hmc, repl_1, repl_2):
+    '''This function takes as input the zero-filtered hmp dataFrame and compares replicates for matches/mismatches. Seven lists are being created (match_list_1, match_list_2, match_homozyg (0,1), mismatch_list_1, mismatch_list_2, mismatch_homozyg (0, 1 = 1st replicate homozygous, 2 = 2nd replicate homosygous), mismatch_type (2 = single mismatch; 3 = double mismatch).'''
+    match_list_1, match_list_2, mismatch_list_1, mismatch_list_2, match_homozyg, mismatch_homozyg, mismatch_type= ([],[],[],[],[],[],[])
+    N_1 = data_hmp[repl_1] == 'N'
+    N_2 = data_hmp[repl_2] == 'N'
+    compare_repl = data_hmp[repl_1] == data_hmp[repl_2]
+    for i, val_1 in enumerate(N_1):
+	val_2 = N_2[i]
+	if val_1 and val_2:
+	    continue
+	elif val_1 or val_2:
+	    continue
+	else:
+	    rep_1_allele_1, rep_1_allele_2 = data_hmp[repl_1][i].split('/')
+	    rep_2_allele_1, rep_2_allele_2 = data_hmp[repl_2][i].split('/')
+	    equal = compare_repl[i]
+	    if rep_1_allele_1 == '?' or rep_2_allele_1 == '?' or rep_1_allele_2 == '?' or rep_2_allele_2 == '?':
+		continue
+	    else: 
+		if equal:
+		    if rep_1_allele_1 == rep_1_allele_2 and rep_2_allele_1 == rep_2_allele_2:
+			match_homozyg.append(1)
+			match_list_1.append(map(int, data_hmc[repl_1][i].split('|')))
+			match_list_2.append(map(int, data_hmc[repl_2][i].split('|')))
+		    else: 
+			match_homozyg.append(0)
+			match_list_1.append(map(int, data_hmc[repl_1][i].split('|')))
+			match_list_2.append(map(int, data_hmc[repl_2][i].split('|')))
+		else: 
+		    if rep_1_allele_1 == rep_2_allele_1 and rep_1_allele_2 != rep_2_allele_2 or rep_1_allele_2 == rep_2_allele_2 and rep_1_allele_1 != rep_2_allele_1: # single mismatch
+			if rep_1_allele_1 == rep_1_allele_2:
+			    mismatch_type.append(2) # 2 = single mismatch; 3 = double
+			    mismatch_homozyg.append(1) # 1 = 1st allele, 2 = 2nd allele homozygous
+			    mismatch_list_1.append(map(int, data_hmc[repl_1][i].split('|')))
+			    mismatch_list_2.append(map(int, data_hmc[repl_2][i].split('|')))
+			elif rep_2_allele_1 == rep_2_allele_2:
+			    mismatch_type.append(2)
+			    mismatch_homozyg.append(2)
+			    mismatch_list_1.append(map(int, data_hmc[repl_1][i].split('|')))
+			    mismatch_list_2.append(map(int, data_hmc[repl_2][i].split('|')))
+		    else: # double mismatch
+			if rep_1_allele_1 == rep_1_allele_2:
+			    mismatch_type.append(3) # 2 = single mismatch; 3 = double
+			    mismatch_homozyg.append(1) # 1 = 1st repl homozygous, 2 = 2nd repl homozygous
+			    mismatch_list_1.append(map(int, data_hmc[repl_1][i].split('|')))
+			    mismatch_list_2.append(map(int, data_hmc[repl_2][i].split('|')))
+			elif rep_2_allele_1 == rep_2_allele_2:
+			    mismatch_type.append(3)
+			    mismatch_homozyg.append(2)
+			    mismatch_list_1.append(map(int, data_hmc[repl_1][i].split('|')))
+			    mismatch_list_2.append(map(int, data_hmc[repl_2][i].split('|')))
+    return match_list_1, match_list_2, match_homozyg, mismatch_list_1, mismatch_list_2, mismatch_homozyg, mismatch_type	
+		    
+
+
 def import_raw_loci(filename):
     '''Retrieve sequencing data from the text file and store it in a numpy array'''
     return np.genfromtxt(filename, dtype=str, delimiter='\t')
