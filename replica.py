@@ -163,13 +163,13 @@ for i, val_1 in enumerate(df_mismatch.mismatch_1):
     if df_mismatch.homozygote[i] == 1:
 	val_list[0] = val_list[0]/2
 	val_list[1] = val_list[1]/2
-	select_min = np.min(val_list)
-	select_max = np.max(val_list)
+	select_min = np.float(np.min(val_list))
+	select_max = np.float(np.max(val_list))
     elif df_mismatch.homozygote[i] == 2:
 	val_list[2] = val_list[2]/2
 	val_list[3] = val_list[3]/2
-	select_min = np.min(val_list)
-	select_max = np.max(val_list)
+	select_min = np.float(np.min(val_list))
+	select_max = np.float(np.max(val_list))
     else:
 	select_min = np.min(val_list)
 	select_max = np.max(val_list)
