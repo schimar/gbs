@@ -86,7 +86,7 @@ repl_summ_data.to_csv("MAF_replicate_summary.csv")
 
 
 #################################################################
-# REPLICATE FUNC for filtered data
+# MISMATCH / READ-DEPTH ANALYSIS
 #################################################################
 data_hmp = hmp_trimmed.copy()
 data_hmc = hmc[data_hmp]
