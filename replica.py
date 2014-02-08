@@ -161,20 +161,21 @@ for i, val_1 in enumerate(df_mismatch.mismatch_1):
     val_2 = df_mismatch.mismatch_2[i]
     val_list = [val_1[0], val_1[1], val_2[0], val_2[1]]
     if df_mismatch.homozygote[i] == 1:
-	val_list[0] = int(val_list[0]/2)
-	val_list[1] = int(val_list[1]/2)
-	select_min = int(np.min(val_list)/2)
-	select_max = int(np.max(val_list)/2)
+	val_list[0] = val_list[0]/2
+	val_list[1] = val_list[1]/2
+	select_min = np.min(val_list)
+	select_max = np.max(val_list)
     elif df_mismatch.homozygote[i] == 2:
-	val_list[2] = int(val_list[2]/2)
-	val_list[3] = int(val_list[3]/2)
-	select_min = int(np.min(val_list)/2)
-	select_max = int(np.max(val_list)/2)
+	val_list[2] = val_list[2]/2
+	val_list[3] = val_list[3]/2
+	select_min = np.min(val_list)
+	select_max = np.max(val_list)
     else:
-	select_min = int(np.min(val_list))
-	select_max = int(np.max(val_list))
+	select_min = np.min(val_list)
+	select_max = np.max(val_list)
     select_min_list.append(select_min)
     select_max_list.append(select_max)
 
 df_mismatch['min'] = pd.Series(select_min_list)
 df_mismatch['max'] = pd.Series(select_max_list)
+# df_mismatch.to_csv("mismatch.csv")
