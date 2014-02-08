@@ -458,6 +458,7 @@ def get_replica_read_depth_minmax(data_hmp, data_hmc, repl_1, repl_2):
     return match_list_1, match_list_2, match_homozyg, mismatch_list_1, mismatch_list_2, mismatch_homozyg, mismatch_type	
 
 def get_pooled_list(data):
+    '''Simply takes the values from each list (output of get_replica_read_depth_minmax) and creates one big list with all pooled values'''
     pool_list = []
     for rep in data:
 	for val in rep:
