@@ -199,7 +199,31 @@ def get_alleles_MAF(base_list, count_list, allele_list, MAF = 0.45, allele_sep= 
 	result.append(value)
     return result 
 
-
+####
+def get_alleles_ratio(base_list, count_list, allele_list, ratio= 0.1, allele_sep= '/', NA= 'N'):
+    '''Returns a list of nucleotides where genptypes are denoted based on the ratio of minor to major allele. Default ratio is set to 10%, change with ratio= <decimal value>. Seperator between alleles (default= '/') can be specified with allele_sep= '<seperator>'. Missing values can be specified with NA= '<NA>' '''
+    result = []    
+    value = ''
+    for i, base in enumerate(base_list):
+        count_1, count_2 = map(int, count_list[i].split('|'))
+        allele_1, allele_2 = allele_list[i].split('/')
+        if base == NA:
+            value = NA
+        else:
+	    if count_1 > count_2:
+		if count_2/count_1 < ratio:
+		    value = str(allele_1 + allele_sep + allele_1)
+		else:
+		    value = str(allele_1 + allele_sep + allele_2)
+	    elif count_2 > count_1:
+		if count_1/count_2 < ratio:
+		    value = str(allele_2 + allele_sep + allele_2)
+		else:
+		    value = str(allele_1 + allele_sep + allele_2)
+	    else:
+		value = NA
+	result.append(value)
+    return result
 ####
 
 def sort_loci_pdDF(data, NA= 'N'):
